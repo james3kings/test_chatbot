@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SZS R&D AI Powered Database</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary-blue: #00d2ff;
+      --neon-red: #ff3e3e;
+      --bg-dark: #05070a;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --chat-bg: rgba(10, 14, 26, 0.96);
+      --user-bubble: rgba(0, 210, 255, 0.18);
+      --ai-bubble: rgba(255, 255, 255, 0.06);
+      --modal-bg: rgba(5, 7, 10, 0.82);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: #e2e8f0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #05070a 70%);
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      background-image: linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px; z-index: -1;
+    }
+
+    header {
+      backdrop-filter: blur(15px);
+      background: rgba(10, 14, 26, 0.8);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.8rem 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .brand-container { display: flex; align-items: center; gap: 18px; }
+    .logo-box { background: rgba(255, 255, 255, 0.05); padding: 6px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; }
+    .logo-img { height: 48px; width: auto; }
+    .logo-text { font-size: 22px; font-weight: 800; color: #fff; }
+    .logo-sub { font-size: 10px; color: var(--primary-blue); letter-spacing: 0.25em; }
+
+    .hero { text-align: center; padding: 5rem 2rem 3rem; }
+    .hero-tag { display: inline-block; font-size: 11px; color: var(--primary-blue); letter-spacing: 0.3em; border: 1px solid rgba(0, 210, 255, 0.3); padding: 5px 15px; border-radius: 3px; margin-bottom: 1.5rem; }
+    .hero h1 { font-size: 42px; font-weight: 300; color: #fff; margin-bottom: 1rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; padding: 0 5% 5rem; max-width: 1200px; margin: 0 auto; }
+    .db-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2.5rem; cursor: pointer; transition: 0.4s; }
+    .db-card:hover, .db-card.active { border-color: var(--primary-blue); background: rgba(0, 210, 255, 0.08); transform: translateY(-5px); }
+    .card-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 10px; }
+    .card-desc { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+
+    .chat-toggle-btn { position: fixed; right: 24px; bottom: 24px; width: 64px; height: 64px; border-radius: 50%; background: rgba(0, 210, 255, 0.2); border: 1px solid var(--primary-blue); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 999; }
+    .chat-popup { position: fixed; right: 24px; bottom: 100px; width: 360px; height: 520px; background: var(--chat-bg); border: 1px solid var(--glass-border); border-radius: 18px; display: none; flex-direction: column; z-index: 999; }
+    .chat-popup.open { display: flex; }
+    .chat-header { padding: 15px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; color: #fff; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .message { max-width: 85%; padding: 10px; border-radius: 12px; font-size: 14px; }
+    .message.user { align-self: flex-end; background: var(--user-bubble); color: #fff; }
+    .message.ai { align-self: flex-start; background: var(--ai-bubble); color: #fff; }
+    .message.system { align-self: center; background: rgba(255,255,255,0.05); font-size: 11px; padding: 5px 10px; border-radius: 10px; }
+
+    .chat-input-area { border-top: 1px solid var(--glass-border); padding: 10px; display: flex; gap: 5px; }
+    .chat-input { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 10px; resize: none; }
+    .chat-send { background: var(--primary-blue); border: none; padding: 0 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-container">
+      <div class="logo-box"><img src="logo.png" alt="SZS" class="logo-img"></div>
+      <div class="logo-text">SZS R&D</div>
+    </div>
+    <button class="lang-toggle" onclick="toggleLanguage()" id="langToggleBtn">繁中</button>
+  </header>
+
+  <div class="hero">
+    <div class="hero-tag">TERMINAL ACCESS</div>
+    <h1>AI Department Assistant</h1>
+  </div>
+
+  <div class="grid">
+    <div class="db-card active" onclick="selectKB('bu1', this)">
+      <div class="card-title">BU1 Database</div>
+      <p class="card-desc">Specialized technical data for Business Unit 1.</p>
+    </div>
+    <div class="db-card" onclick="selectKB('bu3', this)">
+      <div class="card-title">BU3 Database</div>
+      <p class="card-desc">Diverse R&D archives for Business Unit 3.</p>
+    </div>
+  </div>
+
+  <button class="chat-toggle-btn" onclick="toggleChat()">💬</button>
+
+  <div class="chat-popup" id="chatPopup">
+    <div class="chat-header">
+      <span id="chatTitle">SZS AI Chat</span>
+      <button onclick="toggleChat()" style="background:none; border:none; color:#fff; cursor:pointer;">✕</button>
+    </div>
+    <div class="chat-active-kb" style="padding: 5px 15px; font-size: 11px; color: #00d2ff;" id="activeKBLabel"></div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="message ai">Hello! I am your AI assistant. Select a data card and ask me anything about your documents.</div>
+    </div>
+    <form class="chat-input-area" onsubmit="sendMessage(event)">
+      <textarea id="chatInput" class="chat-input" placeholder="Ask a question..."></textarea>
+      <button type="submit" class="chat-send" id="sendBtn">Send</button>
+    </form>
+  </div>
+
+  <script>
+    let currentKB = "bu1";
+    let chatOpen = false;
+
+    // --- CONFIGURATION ---
+    const supabaseUrl = 'https://ngxkiuokbulqezxvrkxq.supabase.co'; 
+    const supabaseKey = 'sb_publishable__9fTb2Z2-OMFAILIQ0KNZw_rGgIEMe2'; // <--- PASTE KEY HERE
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById("chatPopup").classList.toggle("open", chatOpen);
+    }
+
+    function selectKB(kb, el) {
+      currentKB = kb;
+      document.querySelectorAll('.db-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById("activeKBLabel").textContent = "Active Knowledge: " + kb.toUpperCase();
+      addSystemMessage("Switched knowledge base to " + kb.toUpperCase());
+    }
+
+    function addMessage(role, text) {
+      const container = document.getElementById("chatMessages");
+      const div = document.createElement("div");
+      div.className = `message ${role}`;
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function addSystemMessage(text) {
+      const container = document.getElementById("chatMessages");
+      const div = document.createElement("div");
+      div.className = "message system";
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // --- THE UPDATED SEND LOGIC ---
+    async function sendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById("chatInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const message = input.value.trim();
+
+      if (!message) return;
+
+      addMessage("user", message);
+      input.value = "";
+      sendBtn.disabled = true;
+      sendBtn.textContent = "...";
+
+      try {
+        // CALLING YOUR AI EDGE FUNCTION
+        const { data, error } = await _supabase.functions.invoke('ai-chat', {
+          body: { 
+            message: message, 
+            knowledgeBaseId: currentKB 
+          }
+        });
+
+        if (error) throw error;
+
+        // Show AI Reply
+        addMessage("ai", data.reply);
+
+      } catch (err) {
+        console.error(err);
+        addSystemMessage("Error: Could not connect to AI brain. Check Edge Function.");
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send";
+      }
+    }
+    
+    document.getElementById("activeKBLabel").textContent = "Active Knowledge: BU1";
+  </script>
+</body>
+</html>
