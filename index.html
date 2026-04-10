@@ -15,125 +15,502 @@
       --chat-bg: rgba(10, 14, 26, 0.96);
       --user-bubble: rgba(0, 210, 255, 0.18);
       --ai-bubble: rgba(255, 255, 255, 0.06);
+      --modal-bg: rgba(5, 7, 10, 0.82);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: "Segoe UI", sans-serif;
+      font-family: "Segoe UI", "Microsoft JhengHei", "PingFang TC", system-ui, -apple-system, sans-serif;
       background: var(--bg-dark);
       color: #e2e8f0;
       min-height: 100vh;
       background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #05070a 70%);
       background-attachment: fixed;
-      overflow-x: hidden;
     }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99, 179, 237, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 179, 237, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: -1;
+    }
+
+    body.modal-open { overflow: hidden; }
 
     header {
       backdrop-filter: blur(15px);
       background: rgba(10, 14, 26, 0.8);
       border-bottom: 1px solid var(--glass-border);
-      padding: 1rem 5%;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
+      padding: 0.8rem 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .logo-text { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 1px; }
+    .brand-container { display: flex; align-items: center; gap: 18px; }
 
-    .hero { text-align: center; padding: 4rem 2rem 2rem; }
-    .hero-tag { display: inline-block; font-size: 11px; color: var(--primary-blue); letter-spacing: 0.3em; border: 1px solid rgba(0, 210, 255, 0.3); padding: 5px 15px; border-radius: 3px; margin-bottom: 1rem; }
-    .hero h1 { font-size: 36px; font-weight: 300; color: #fff; }
+    .logo-box {
+      background: rgba(255,255,255,0.05);
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+    }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 2rem 5%; max-width: 1200px; margin: 0 auto; }
-    .db-card { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 2rem; cursor: pointer; transition: 0.3s; }
-    .db-card:hover, .db-card.active { border-color: var(--primary-blue); background: rgba(0, 210, 255, 0.1); transform: translateY(-3px); }
-    .card-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+    .logo-img { height: 48px; width: auto; filter: drop-shadow(0 0 5px rgba(255,62,62,0.2)); }
 
-    .chat-toggle-btn { position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary-blue); color: #000; border: none; cursor: pointer; font-size: 24px; z-index: 1000; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.4); }
-    
-    .chat-popup { position: fixed; right: 24px; bottom: 100px; width: 380px; height: 550px; background: var(--chat-bg); border: 1px solid var(--glass-border); border-radius: 20px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .brand-text-group { display: flex; flex-direction: column; }
+    .logo-text { font-size: 22px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #fff; }
+    .logo-sub { font-size: 10px; color: var(--primary-blue); letter-spacing: 0.25em; font-weight: 600; }
+
+    .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    .header-badge {
+      font-size: 10px; padding: 6px 12px;
+      border: 1px solid var(--primary-blue); border-radius: 4px;
+      color: var(--primary-blue); text-transform: uppercase;
+      background: rgba(0,210,255,0.05); box-shadow: 0 0 10px rgba(0,210,255,0.2);
+    }
+
+    .lang-toggle, .login-open-btn, .logout-btn {
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: #fff; border-radius: 8px;
+      padding: 8px 12px; cursor: pointer;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .lang-toggle:hover, .login-open-btn:hover, .logout-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .user-chip {
+      font-size: 12px; color: var(--primary-blue);
+      border: 1px solid rgba(0,210,255,0.2); border-radius: 999px;
+      padding: 8px 12px; background: rgba(0,210,255,0.06); display: none;
+    }
+
+    .hero { text-align: center; padding: 5rem 2rem 3rem; }
+    .hero-tag {
+      display: inline-block; font-size: 11px; color: var(--primary-blue);
+      letter-spacing: 0.3em; border: 1px solid rgba(0,210,255,0.3);
+      padding: 5px 15px; border-radius: 3px; margin-bottom: 1.5rem;
+    }
+    .hero h1 { font-size: 42px; font-weight: 300; color: #fff; margin-bottom: 1rem; }
+    .hero p { font-size: 16px; color: #94a3b8; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px; padding: 0 5% 5rem; max-width: 1200px; margin: 0 auto;
+    }
+
+    .db-card {
+      background: var(--card-bg); backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border); border-radius: 20px;
+      padding: 2.5rem; text-decoration: none;
+      transition: all 0.4s ease; position: relative; overflow: hidden; cursor: pointer; display: block;
+    }
+    .db-card:hover { background: rgba(255,255,255,0.08); border-color: var(--primary-blue); transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+    .db-card.active { border-color: var(--primary-blue); background: rgba(0,210,255,0.08); box-shadow: 0 0 0 1px rgba(0,210,255,0.25); }
+
+    .card-id { font-family: "Courier New", monospace; font-size: 11px; color: var(--primary-blue); margin-bottom: 15px; display: block; opacity: 0.7; }
+    .card-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 12px; }
+    .card-desc { font-size: 14px; color: #94a3b8; line-height: 1.7; margin-bottom: 25px; }
+    .card-action { font-size: 12px; font-weight: 700; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; letter-spacing: 1px; }
+
+    footer { text-align: center; padding: 4rem 2rem; border-top: 1px solid var(--glass-border); font-size: 12px; color: #475569; letter-spacing: 2px; }
+    .security-notice { color: var(--neon-red); margin-top: 15px; font-size: 10px; text-transform: uppercase; }
+
+    /* Chat Toggle Button */
+    .chat-toggle-btn {
+      position: fixed; right: 24px; bottom: 24px;
+      width: 64px; height: 64px;
+      border: 1px solid rgba(0,210,255,0.4); border-radius: 50%;
+      background: rgba(0,210,255,0.12); cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35); backdrop-filter: blur(10px);
+      z-index: 999; display: flex; align-items: center; justify-content: center; padding: 0;
+    }
+    .chat-toggle-btn:hover { background: rgba(0,210,255,0.22); }
+    .chat-toggle-logo { width: 34px; height: 34px; object-fit: contain; display: block; }
+
+    /* Chat Popup */
+    .chat-popup {
+      position: fixed; right: 24px; bottom: 100px;
+      width: 360px; max-width: calc(100vw - 24px); height: 520px;
+      background: var(--chat-bg); border: 1px solid var(--glass-border);
+      border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+      overflow: hidden; display: none; flex-direction: column; z-index: 999;
+    }
     .chat-popup.open { display: flex; }
-    
-    .chat-header { padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-    
-    .message { max-width: 85%; padding: 12px 16px; border-radius: 15px; font-size: 14px; line-height: 1.5; }
-    .message.user { align-self: flex-end; background: var(--user-bubble); color: #fff; border-bottom-right-radius: 2px; }
-    .message.ai { align-self: flex-start; background: var(--ai-bubble); color: #fff; border-bottom-left-radius: 2px; border: 1px solid var(--glass-border); }
-    .message.system { align-self: center; background: rgba(255,255,255,0.05); font-size: 11px; color: #94a3b8; }
 
-    .chat-input-area { padding: 15px; border-top: 1px solid var(--glass-border); display: flex; gap: 10px; }
-    .chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid #333; color: #fff; padding: 12px; border-radius: 10px; resize: none; font-family: inherit; }
-    .chat-send { background: var(--primary-blue); border: none; padding: 0 20px; border-radius: 10px; cursor: pointer; font-weight: 700; transition: 0.2s; }
-    .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+    .chat-header {
+      padding: 14px 16px; border-bottom: 1px solid var(--glass-border);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,0.03);
+    }
+    .chat-header-left { display: flex; flex-direction: column; gap: 4px; }
+    .chat-brand-row { display: flex; align-items: center; gap: 10px; }
+    .chat-header-logo { width: 30px; height: 30px; object-fit: contain; display: block; }
+    .chat-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .chat-subtitle { font-size: 11px; color: var(--primary-blue); letter-spacing: 1px; }
+    .chat-close { background: transparent; border: none; color: #cbd5e1; font-size: 22px; cursor: pointer; }
+
+    .chat-active-kb { padding: 10px 16px; font-size: 12px; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .chat-active-kb strong { color: var(--primary-blue); }
+
+    .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+    .message { max-width: 85%; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+    .message.user { align-self: flex-end; background: var(--user-bubble); border: 1px solid rgba(0,210,255,0.18); }
+    .message.ai { align-self: flex-start; background: var(--ai-bubble); border: 1px solid rgba(255,255,255,0.06); }
+    .message.system { align-self: center; background: rgba(255,255,255,0.05); font-size: 12px; color: #cbd5e1; border-radius: 999px; padding: 7px 10px; max-width: 95%; }
+
+    .chat-input-area { border-top: 1px solid var(--glass-border); padding: 12px; display: flex; gap: 8px; background: rgba(255,255,255,0.02); }
+    .chat-input { flex: 1; min-height: 46px; max-height: 100px; resize: none; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); color: #fff; border-radius: 12px; padding: 12px; outline: none; font-size: 14px; }
+    .chat-input:focus { border-color: rgba(0,210,255,0.4); }
+    .chat-send { min-width: 84px; border: 1px solid rgba(0,210,255,0.35); border-radius: 12px; background: rgba(0,210,255,0.12); color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 0 14px; }
+    .chat-send:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Auth Modal */
+    .auth-overlay { position: fixed; inset: 0; background: var(--modal-bg); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+    .auth-overlay.show { display: flex; }
+
+    .auth-modal { width: 100%; max-width: 430px; background: rgba(10,14,26,0.96); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.45); }
+    .auth-modal-header { padding: 18px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); }
+    .auth-title { font-size: 18px; color: #fff; font-weight: 700; }
+    .auth-close { background: transparent; border: none; color: #cbd5e1; font-size: 24px; cursor: pointer; }
+
+    .auth-tabs { display: flex; border-bottom: 1px solid var(--glass-border); }
+    .auth-tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #94a3b8; background: rgba(255,255,255,0.02); }
+    .auth-tab.active { color: var(--primary-blue); background: rgba(0,210,255,0.06); border-bottom: 2px solid var(--primary-blue); }
+
+    .auth-body { padding: 20px; }
+    .auth-form { display: none; flex-direction: column; gap: 14px; }
+    .auth-form.active { display: flex; }
+
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font-size: 12px; color: #cbd5e1; }
+    .field-input { width: 100%; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); color: #fff; border-radius: 12px; padding: 12px 14px; outline: none; font-size: 14px; }
+    .field-input:focus { border-color: rgba(0,210,255,0.4); }
+
+    .auth-submit { margin-top: 6px; border: 1px solid rgba(0,210,255,0.35); background: rgba(0,210,255,0.12); color: var(--primary-blue); border-radius: 12px; padding: 12px 14px; font-weight: 700; cursor: pointer; }
+    .auth-hint { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+    .auth-message { min-height: 18px; font-size: 12px; color: var(--primary-blue); }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 32px; }
+      .chat-popup { right: 12px; left: 12px; bottom: 88px; width: auto; height: 70vh; }
+      .chat-toggle-btn { right: 16px; bottom: 16px; }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo-text">SZS R&D SYSTEM</div>
+    <div class="brand-container">
+      <div class="logo-box">
+        <img src="logo.png" alt="SZS Logo" class="logo-img">
+      </div>
+      <div class="brand-text-group">
+        <div class="logo-text">SZS R&D</div>
+        <div class="logo-sub">INTELLECTUAL DATA CORE</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-chip" id="userChip"></div>
+      <button class="logout-btn" id="logoutBtn" onclick="logoutUser()" style="display:none;" data-i18n="logoutBtn">Logout</button>
+      <button class="login-open-btn" id="loginOpenBtn" onclick="openAuthModal()" data-i18n="loginBtn">Login</button>
+      <button class="lang-toggle" onclick="toggleLanguage()" id="langToggleBtn">繁中</button>
+      <div class="header-badge" data-i18n="headerBadge">LINK ESTABLISHED</div>
+    </div>
   </header>
 
   <div class="hero">
-    <div class="hero-tag">AI-READY INFRASTRUCTURE</div>
-    <h1>Cloud Knowledge Terminal</h1>
+    <div class="hero-tag" data-i18n="heroTag">TERMINAL ACCESS</div>
+    <h1 data-i18n="heroTitle">Department Knowledge Base</h1>
+    <p data-i18n="heroDesc">Select a specialized data stream, then open the chatbot popup to ask questions.</p>
   </div>
 
   <div class="grid">
-    <div class="db-card active" onclick="selectKB('bu1', this)">
-      <div class="card-title">BU1: Business Unit 1</div>
-      <p style="font-size: 13px; color: #94a3b8;">Technical specs and engineering logs.</p>
-    </div>
-    <div class="db-card" onclick="selectKB('bu3', this)">
-      <div class="card-title">BU3: Business Unit 3</div>
-      <p style="font-size: 13px; color: #94a3b8;">Strategic R&D and archives.</p>
-    </div>
+    <a class="db-card active" href="#" onclick="selectKB('bu1', this); return false;">
+      <span class="card-id">DATA_STREAM // 01</span>
+      <div class="card-title" data-i18n="card1Title">BU1 Database</div>
+      <p class="card-desc" data-i18n="card1Desc">This database for BU1 handles structured, consistent data.</p>
+      <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
+    </a>
+    <a class="db-card" href="#" onclick="selectKB('bu3', this); return false;">
+      <span class="card-id">DATA_STREAM // 02</span>
+      <div class="card-title" data-i18n="card2Title">BU3 Database</div>
+      <p class="card-desc" data-i18n="card2Desc">This database for BU3 handles diverse, flexible data.</p>
+      <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
+    </a>
+    <a class="db-card" href="#" onclick="selectKB('training', this); return false;">
+      <span class="card-id">DATA_STREAM // 03</span>
+      <div class="card-title" data-i18n="card3Title">Newcomer Training</div>
+      <p class="card-desc" data-i18n="card3Desc">Protocol induction, onboarding modules, and R&D department standard operating procedures.</p>
+      <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
+    </a>
+    <a class="db-card" href="#" onclick="selectKB('general', this); return false;">
+      <span class="card-id">DATA_STREAM // 04</span>
+      <div class="card-title" data-i18n="card4Title">General R&D Database</div>
+      <p class="card-desc" data-i18n="card4Desc">Universal research findings, legacy technical archives, and collaborative discovery data.</p>
+      <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
+    </a>
   </div>
 
-  <button class="chat-toggle-btn" onclick="toggleChat()">💬</button>
+  <footer>
+    &copy; 2026 SHIN ZU SHING CO., LTD. <br>
+    <div class="security-notice" data-i18n="securityNotice">AUTHORIZED PERSONNEL ONLY — INTERNAL USE ONLY</div>
+  </footer>
+
+  <button class="chat-toggle-btn" onclick="toggleChat()" title="Open Chat">
+    <img src="logo.png" alt="SZS Chat" class="chat-toggle-logo">
+  </button>
 
   <div class="chat-popup" id="chatPopup">
     <div class="chat-header">
-      <span style="font-weight: bold;">AI Assistant</span>
-      <button onclick="toggleChat()" style="background:none; border:none; color:#fff; cursor:pointer; font-size: 20px;">×</button>
+      <div class="chat-header-left">
+        <div class="chat-brand-row">
+          <img src="logo.png" alt="SZS Logo" class="chat-header-logo">
+          <div>
+            <div class="chat-title" data-i18n="chatTitle">SZS AI Assistant</div>
+            <div class="chat-subtitle" data-i18n="chatSubtitle">POPUP CHAT INTERFACE</div>
+          </div>
+        </div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">×</button>
     </div>
-    <div id="activeKBLabel" style="padding: 8px 20px; font-size: 10px; color: var(--primary-blue); background: rgba(0,210,255,0.05);">ACTIVE DATASTREAM: BU1</div>
+
+    <div class="chat-active-kb" id="activeKBLabel"></div>
+
     <div class="chat-messages" id="chatMessages">
-      <div class="message ai">Connection established. I am ready to analyze your data for BU1. What would you like to know?</div>
+      <div class="message system" id="welcomeSystemMsg"></div>
+      <div class="message ai" id="welcomeAiMsg"></div>
     </div>
+
     <form class="chat-input-area" onsubmit="sendMessage(event)">
-      <textarea id="chatInput" class="chat-input" placeholder="Enter query..." rows="1"></textarea>
-      <button type="submit" class="chat-send" id="sendBtn">SEND</button>
+      <textarea id="chatInput" class="chat-input" placeholder="Type your question..." rows="1"></textarea>
+      <button type="submit" class="chat-send" id="sendBtn" data-i18n="sendBtn">Send</button>
     </form>
   </div>
 
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-modal">
+      <div class="auth-modal-header">
+        <div class="auth-title" data-i18n="authTitle">User Access</div>
+        <button class="auth-close" onclick="closeAuthModal()">×</button>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="loginTabBtn" onclick="switchAuthTab('login')" data-i18n="loginTab">Login</div>
+        <div class="auth-tab" id="signupTabBtn" onclick="switchAuthTab('signup')" data-i18n="signupTab">Sign Up</div>
+      </div>
+      <div class="auth-body">
+        <div class="auth-message" id="authMessage"></div>
+        <form class="auth-form active" id="loginForm" onsubmit="loginUser(event)">
+          <div class="field-group">
+            <label class="field-label" for="loginCompanyId" data-i18n="companyIdLabel">Company ID</label>
+            <input class="field-input" id="loginCompanyId" type="text" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="loginPassword" data-i18n="passwordLabel">Password</label>
+            <input class="field-input" id="loginPassword" type="password" />
+          </div>
+          <button class="auth-submit" type="submit" data-i18n="loginBtn">Login</button>
+          <div class="auth-hint" data-i18n="loginHint">Demo only: this static page stores users in your browser for testing.</div>
+        </form>
+        <form class="auth-form" id="signupForm" onsubmit="signupUser(event)">
+          <div class="field-group">
+            <label class="field-label" for="signupName" data-i18n="fullNameLabel">Full Name</label>
+            <input class="field-input" id="signupName" type="text" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="signupCompanyId" data-i18n="companyIdLabel">Company ID</label>
+            <input class="field-input" id="signupCompanyId" type="text" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="signupPassword" data-i18n="passwordLabel">Password</label>
+            <input class="field-input" id="signupPassword" type="password" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="signupConfirmPassword" data-i18n="confirmPasswordLabel">Confirm Password</label>
+            <input class="field-input" id="signupConfirmPassword" type="password" />
+          </div>
+          <button class="auth-submit" type="submit" data-i18n="signupBtn">Sign Up</button>
+          <div class="auth-hint" data-i18n="signupHint">For production use, connect this sign-up flow to your backend and database.</div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // --- 1. SETUP ---
-    const supabaseUrl = 'https://ngxkiuokbulqezxvrkxq.supabase.co'; 
-    const supabaseKey = 'sb_publishable__9fTb2Z2-OMFAILIQ0KNZw_rGgIEMe2'; 
+    // --- SETUP ---
+    const supabaseUrl = 'https://ngxkiuokbulqezxvrkxq.supabase.co';
+    const supabaseKey = 'sb_publishable__9fTb2Z2-OMFAILIQ0KNZw_rGgIEMe2';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let currentKB = "bu1";
     let chatOpen = false;
+    let currentLanguage = "en";
+    let currentUser = null;
 
-    // --- 2. UI FUNCTIONS ---
+    // --- TRANSLATIONS ---
+    const translations = {
+      en: {
+        pageTitle: "SZS R&D Intelligence Portal",
+        headerBadge: "LINK ESTABLISHED",
+        heroTag: "TERMINAL ACCESS",
+        heroTitle: "Department Knowledge Base",
+        heroDesc: "Select a specialized data stream, then open the chatbot popup to ask questions.",
+        card1Title: "BU1 Database",
+        card1Desc: "This database for BU1 handles structured, consistent data.",
+        card2Title: "BU3 Database",
+        card2Desc: "This database for BU3 handles diverse, flexible data.",
+        card3Title: "Newcomer Training",
+        card3Desc: "Protocol induction, onboarding modules, and R&D department standard operating procedures.",
+        card4Title: "General R&D Database",
+        card4Desc: "Universal research findings, legacy technical archives, and collaborative discovery data.",
+        cardAction: "ACTIVATE CHAT MODE →",
+        securityNotice: "AUTHORIZED PERSONNEL ONLY — INTERNAL USE ONLY",
+        chatTitle: "SZS AI Assistant",
+        chatSubtitle: "POPUP CHAT INTERFACE",
+        sendBtn: "Send",
+        chatPlaceholder: "Type your question...",
+        welcomeSystem: "Popup chatbot ready.",
+        welcomeAi: "Hello. Choose a database card, then ask your question here.",
+        kbLabelPrefix: "Active Knowledge Base:",
+        switchedTo: "Knowledge base switched to ",
+        connectionError: "AI Error. Check Supabase logs.",
+        sending: "Sending...",
+        authTitle: "User Access",
+        loginTab: "Login",
+        signupTab: "Sign Up",
+        loginBtn: "Login",
+        logoutBtn: "Logout",
+        signupBtn: "Sign Up",
+        companyIdLabel: "Company ID",
+        passwordLabel: "Password",
+        confirmPasswordLabel: "Confirm Password",
+        fullNameLabel: "Full Name",
+        loginHint: "Demo only: this static page stores users in your browser for testing.",
+        signupHint: "For production use, connect this sign-up flow to your backend and database.",
+        loginSuccess: "Login successful.",
+        logoutSuccess: "Logged out.",
+        signupSuccess: "Sign-up successful. You can now log in.",
+        fieldRequired: "Please complete all required fields.",
+        passwordMismatch: "Passwords do not match.",
+        userExists: "This Company ID already exists.",
+        userNotFound: "Company ID not found.",
+        wrongPassword: "Incorrect password.",
+        loggedInAs: "Logged in as"
+      },
+      "zh-TW": {
+        pageTitle: "SZS 研發智慧入口網站",
+        headerBadge: "連線已建立",
+        heroTag: "終端存取",
+        heroTitle: "部門知識資料庫",
+        heroDesc: "請先選擇知識資料流，再開啟右下角聊天視窗進行提問。",
+        card1Title: "BU1 資料庫",
+        card1Desc: "此資料庫供 BU1 使用，處理結構化且一致性的資料。",
+        card2Title: "BU3 資料庫",
+        card2Desc: "此資料庫供 BU3 使用，處理多樣化且彈性的資料。",
+        card3Title: "新人訓練資料庫",
+        card3Desc: "包含新人報到流程、教育訓練模組與研發部門標準作業程序。",
+        card4Title: "研發通用資料庫",
+        card4Desc: "整合通用研究成果、歷史技術檔案與協作知識內容。",
+        cardAction: "啟用聊天模式 →",
+        securityNotice: "僅限授權人員使用 — 內部使用",
+        chatTitle: "SZS AI 助理",
+        chatSubtitle: "彈出式聊天介面",
+        sendBtn: "送出",
+        chatPlaceholder: "請輸入您的問題...",
+        welcomeSystem: "彈出式聊天機器人已就緒。",
+        welcomeAi: "您好，請先選擇資料庫卡片，然後在此輸入您的問題。",
+        kbLabelPrefix: "目前知識資料庫：",
+        switchedTo: "已切換至知識資料庫：",
+        connectionError: "AI 錯誤，請查看 Supabase 記錄。",
+        sending: "傳送中...",
+        authTitle: "使用者登入",
+        loginTab: "登入",
+        signupTab: "註冊",
+        loginBtn: "登入",
+        logoutBtn: "登出",
+        signupBtn: "註冊",
+        companyIdLabel: "公司工號",
+        passwordLabel: "密碼",
+        confirmPasswordLabel: "確認密碼",
+        fullNameLabel: "姓名",
+        loginHint: "此版本僅為示範，帳號資料會暫存在您的瀏覽器中。",
+        signupHint: "正式上線時，請將註冊流程連接到後端與資料庫。",
+        loginSuccess: "登入成功。",
+        logoutSuccess: "已登出。",
+        signupSuccess: "註冊成功，您現在可以登入。",
+        fieldRequired: "請完整填寫所有欄位。",
+        passwordMismatch: "兩次輸入的密碼不一致。",
+        userExists: "此公司工號已存在。",
+        userNotFound: "找不到此公司工號。",
+        wrongPassword: "密碼錯誤。",
+        loggedInAs: "目前登入"
+      }
+    };
+
+    const kbNames = {
+      en: { "bu1": "BU1", "bu3": "BU3", "training": "NEWCOMER TRAINING", "general": "GENERAL R&D" },
+      "zh-TW": { "bu1": "BU1", "bu3": "BU3", "training": "新人訓練", "general": "研發通用" }
+    };
+
+    // --- LANGUAGE ---
+    function applyLanguage(lang) {
+      currentLanguage = lang;
+      document.documentElement.lang = lang;
+      document.title = translations[lang].pageTitle;
+      document.querySelectorAll("[data-i18n]").forEach(function(el) {
+        const key = el.getAttribute("data-i18n");
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+      });
+      document.getElementById("chatInput").placeholder = translations[lang].chatPlaceholder;
+      document.getElementById("welcomeSystemMsg").textContent = translations[lang].welcomeSystem;
+      document.getElementById("welcomeAiMsg").textContent = translations[lang].welcomeAi;
+      document.getElementById("langToggleBtn").textContent = lang === "en" ? "繁中" : "EN";
+      updateKBLabel();
+      updateUserUI();
+    }
+
+    function toggleLanguage() {
+      applyLanguage(currentLanguage === "en" ? "zh-TW" : "en");
+    }
+
+    function updateKBLabel() {
+      const label = document.getElementById("activeKBLabel");
+      label.innerHTML = translations[currentLanguage].kbLabelPrefix + ' <strong>' + (kbNames[currentLanguage][currentKB] || currentKB.toUpperCase()) + '</strong>';
+    }
+
+    // --- CHAT UI ---
     function toggleChat() {
       chatOpen = !chatOpen;
-      document.getElementById("chatPopup").classList.toggle("open", chatOpen);
+      const popup = document.getElementById("chatPopup");
+      popup.classList.toggle("open", chatOpen);
+      if (chatOpen) document.getElementById("chatInput").focus();
     }
 
     function selectKB(kb, el) {
       currentKB = kb;
+      updateKBLabel();
       document.querySelectorAll('.db-card').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById("activeKBLabel").textContent = "ACTIVE DATASTREAM: " + kb.toUpperCase();
-      addSystemMessage("Switched to " + kb.toUpperCase() + " context.");
+      if (el) el.classList.add('active');
+      addSystemMessage(translations[currentLanguage].switchedTo + (kbNames[currentLanguage][kb] || kb.toUpperCase()));
     }
 
     function addMessage(role, text) {
       const container = document.getElementById("chatMessages");
       const div = document.createElement("div");
-      div.className = `message ${role}`;
+      div.className = "message " + role;
       div.textContent = text;
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
@@ -148,45 +525,149 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // --- 3. AI CONNECTION ---
+    // --- AI CHAT (working Supabase connection from file 1) ---
     async function sendMessage(event) {
       event.preventDefault();
       const input = document.getElementById("chatInput");
       const sendBtn = document.getElementById("sendBtn");
       const message = input.value.trim();
-
       if (!message) return;
 
-      // Add user message to UI
       addMessage("user", message);
       input.value = "";
-      
-      // Loading State
       sendBtn.disabled = true;
-      sendBtn.textContent = "...";
+      sendBtn.textContent = translations[currentLanguage].sending;
 
       try {
-        // CALL THE EDGE FUNCTION (This talks to Gemini)
         const { data, error } = await _supabase.functions.invoke('ai-chat', {
-          body: { 
-            message: message, 
-            knowledgeBaseId: currentKB 
+          body: {
+            message: message,
+            knowledgeBaseId: currentKB
           }
         });
 
         if (error) throw error;
-
-        // Display AI response
         addMessage("ai", data.reply || "No response from AI.");
 
       } catch (err) {
         console.error("AI Error:", err);
-        addSystemMessage("Error: Check Supabase Logs for 401/500 errors.");
+        addSystemMessage(translations[currentLanguage].connectionError + ": " + err.message);
       } finally {
         sendBtn.disabled = false;
-        sendBtn.textContent = "SEND";
+        sendBtn.textContent = translations[currentLanguage].sendBtn;
       }
     }
+
+    // --- AUTH ---
+    function openAuthModal() {
+      document.getElementById("authOverlay").classList.add("show");
+      document.body.classList.add("modal-open");
+    }
+
+    function closeAuthModal() {
+      document.getElementById("authOverlay").classList.remove("show");
+      document.body.classList.remove("modal-open");
+      clearAuthMessage();
+    }
+
+    function switchAuthTab(tab) {
+      document.getElementById("loginTabBtn").classList.toggle("active", tab === "login");
+      document.getElementById("signupTabBtn").classList.toggle("active", tab === "signup");
+      document.getElementById("loginForm").classList.toggle("active", tab === "login");
+      document.getElementById("signupForm").classList.toggle("active", tab === "signup");
+      clearAuthMessage();
+    }
+
+    function setAuthMessage(text) { document.getElementById("authMessage").textContent = text; }
+    function clearAuthMessage() { document.getElementById("authMessage").textContent = ""; }
+
+    function getStoredUsers() {
+      const raw = localStorage.getItem("szs_demo_users");
+      return raw ? JSON.parse(raw) : [];
+    }
+
+    function saveStoredUsers(users) {
+      localStorage.setItem("szs_demo_users", JSON.stringify(users));
+    }
+
+    function signupUser(event) {
+      event.preventDefault();
+      const t = translations[currentLanguage];
+      const name = document.getElementById("signupName").value.trim();
+      const companyId = document.getElementById("signupCompanyId").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const confirmPassword = document.getElementById("signupConfirmPassword").value;
+
+      if (!name || !companyId || !password || !confirmPassword) { setAuthMessage(t.fieldRequired); return; }
+      if (password !== confirmPassword) { setAuthMessage(t.passwordMismatch); return; }
+
+      const users = getStoredUsers();
+      if (users.find(u => u.companyId.toLowerCase() === companyId.toLowerCase())) { setAuthMessage(t.userExists); return; }
+
+      users.push({ name, companyId, password });
+      saveStoredUsers(users);
+      setAuthMessage(t.signupSuccess);
+      document.getElementById("signupForm").reset();
+      switchAuthTab("login");
+    }
+
+    function loginUser(event) {
+      event.preventDefault();
+      const t = translations[currentLanguage];
+      const companyId = document.getElementById("loginCompanyId").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!companyId || !password) { setAuthMessage(t.fieldRequired); return; }
+
+      const users = getStoredUsers();
+      const user = users.find(u => u.companyId.toLowerCase() === companyId.toLowerCase());
+
+      if (!user) { setAuthMessage(t.userNotFound); return; }
+      if (user.password !== password) { setAuthMessage(t.wrongPassword); return; }
+
+      currentUser = { name: user.name, companyId: user.companyId };
+      sessionStorage.setItem("szs_demo_current_user", JSON.stringify(currentUser));
+      updateUserUI();
+      closeAuthModal();
+      addSystemMessage(t.loginSuccess);
+      document.getElementById("loginForm").reset();
+    }
+
+    function logoutUser() {
+      currentUser = null;
+      sessionStorage.removeItem("szs_demo_current_user");
+      updateUserUI();
+      addSystemMessage(translations[currentLanguage].logoutSuccess);
+    }
+
+    function updateUserUI() {
+      const t = translations[currentLanguage];
+      const userChip = document.getElementById("userChip");
+      const loginOpenBtn = document.getElementById("loginOpenBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      if (currentUser) {
+        userChip.style.display = "inline-flex";
+        userChip.textContent = t.loggedInAs + ": " + currentUser.companyId;
+        loginOpenBtn.style.display = "none";
+        logoutBtn.style.display = "inline-block";
+      } else {
+        userChip.style.display = "none";
+        loginOpenBtn.style.display = "inline-block";
+        logoutBtn.style.display = "none";
+      }
+    }
+
+    function restoreSession() {
+      const raw = sessionStorage.getItem("szs_demo_current_user");
+      if (raw) currentUser = JSON.parse(raw);
+      updateUserUI();
+    }
+
+    // --- INIT ---
+    applyLanguage("en");
+    restoreSession();
+    updateKBLabel();
   </script>
 </body>
 </html>
