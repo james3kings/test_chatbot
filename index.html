@@ -88,6 +88,7 @@
       color: #fff; border-radius: 8px;
       padding: 8px 12px; cursor: pointer;
       font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+      transition: background 0.2s;
     }
     .lang-toggle:hover, .login-open-btn:hover, .logout-btn:hover { background: rgba(255,255,255,0.1); }
 
@@ -178,6 +179,18 @@
     .chat-send { min-width: 84px; border: 1px solid rgba(0,210,255,0.35); border-radius: 12px; background: rgba(0,210,255,0.12); color: var(--primary-blue); font-weight: 700; cursor: pointer; padding: 0 14px; }
     .chat-send:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    /* Auth loading state */
+    .auth-loading {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: #94a3b8; padding: 6px 0;
+    }
+    .auth-spinner {
+      width: 14px; height: 14px; border: 2px solid rgba(0,210,255,0.2);
+      border-top-color: var(--primary-blue); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* Auth Modal */
     .auth-overlay { position: fixed; inset: 0; background: var(--modal-bg); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
     .auth-overlay.show { display: flex; }
@@ -197,12 +210,15 @@
 
     .field-group { display: flex; flex-direction: column; gap: 6px; }
     .field-label { font-size: 12px; color: #cbd5e1; }
-    .field-input { width: 100%; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); color: #fff; border-radius: 12px; padding: 12px 14px; outline: none; font-size: 14px; }
+    .field-input { width: 100%; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); color: #fff; border-radius: 12px; padding: 12px 14px; outline: none; font-size: 14px; transition: border-color 0.2s; }
     .field-input:focus { border-color: rgba(0,210,255,0.4); }
 
-    .auth-submit { margin-top: 6px; border: 1px solid rgba(0,210,255,0.35); background: rgba(0,210,255,0.12); color: var(--primary-blue); border-radius: 12px; padding: 12px 14px; font-weight: 700; cursor: pointer; }
+    .auth-submit { margin-top: 6px; border: 1px solid rgba(0,210,255,0.35); background: rgba(0,210,255,0.12); color: var(--primary-blue); border-radius: 12px; padding: 12px 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .auth-submit:hover { background: rgba(0,210,255,0.2); }
+    .auth-submit:disabled { opacity: 0.6; cursor: not-allowed; }
     .auth-hint { font-size: 12px; color: #94a3b8; line-height: 1.5; }
     .auth-message { min-height: 18px; font-size: 12px; color: var(--primary-blue); }
+    .auth-message.error { color: var(--neon-red); }
 
     @media (max-width: 768px) {
       .hero h1 { font-size: 32px; }
@@ -301,6 +317,7 @@
     </form>
   </div>
 
+  <!-- Auth Modal -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-modal">
       <div class="auth-modal-header">
@@ -316,41 +333,42 @@
         <form class="auth-form active" id="loginForm" onsubmit="loginUser(event)">
           <div class="field-group">
             <label class="field-label" for="loginCompanyId" data-i18n="companyIdLabel">Company ID</label>
-            <input class="field-input" id="loginCompanyId" type="text" />
+            <input class="field-input" id="loginCompanyId" type="text" autocomplete="username" />
           </div>
           <div class="field-group">
             <label class="field-label" for="loginPassword" data-i18n="passwordLabel">Password</label>
-            <input class="field-input" id="loginPassword" type="password" />
+            <input class="field-input" id="loginPassword" type="password" autocomplete="current-password" />
           </div>
-          <button class="auth-submit" type="submit" data-i18n="loginBtn">Login</button>
-          <div class="auth-hint" data-i18n="loginHint">Demo only: this static page stores users in your browser for testing.</div>
+          <button class="auth-submit" type="submit" id="loginSubmitBtn" data-i18n="loginBtn">Login</button>
         </form>
         <form class="auth-form" id="signupForm" onsubmit="signupUser(event)">
           <div class="field-group">
             <label class="field-label" for="signupName" data-i18n="fullNameLabel">Full Name</label>
-            <input class="field-input" id="signupName" type="text" />
+            <input class="field-input" id="signupName" type="text" autocomplete="name" />
           </div>
           <div class="field-group">
             <label class="field-label" for="signupCompanyId" data-i18n="companyIdLabel">Company ID</label>
-            <input class="field-input" id="signupCompanyId" type="text" />
+            <input class="field-input" id="signupCompanyId" type="text" autocomplete="username" />
           </div>
           <div class="field-group">
             <label class="field-label" for="signupPassword" data-i18n="passwordLabel">Password</label>
-            <input class="field-input" id="signupPassword" type="password" />
+            <input class="field-input" id="signupPassword" type="password" autocomplete="new-password" />
           </div>
           <div class="field-group">
             <label class="field-label" for="signupConfirmPassword" data-i18n="confirmPasswordLabel">Confirm Password</label>
-            <input class="field-input" id="signupConfirmPassword" type="password" />
+            <input class="field-input" id="signupConfirmPassword" type="password" autocomplete="new-password" />
           </div>
-          <button class="auth-submit" type="submit" data-i18n="signupBtn">Sign Up</button>
-          <div class="auth-hint" data-i18n="signupHint">For production use, connect this sign-up flow to your backend and database.</div>
+          <button class="auth-submit" type="submit" id="signupSubmitBtn" data-i18n="signupBtn">Sign Up</button>
+          <div class="auth-hint" data-i18n="signupHint">Your account will be created securely via Supabase Auth.</div>
         </form>
       </div>
     </div>
   </div>
 
   <script>
-    // --- SETUP ---
+    // ─────────────────────────────────────────
+    // SETUP
+    // ─────────────────────────────────────────
     const supabaseUrl = 'https://ngxkiuokbulqezxvrkxq.supabase.co';
     const supabaseKey = 'sb_publishable__9fTb2Z2-OMFAILIQ0KNZw_rGgIEMe2';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -358,9 +376,11 @@
     let currentKB = "bu1";
     let chatOpen = false;
     let currentLanguage = "en";
-    let currentUser = null;
+    let currentUser = null; // { id, companyId, name }
 
-    // --- TRANSLATIONS ---
+    // ─────────────────────────────────────────
+    // TRANSLATIONS
+    // ─────────────────────────────────────────
     const translations = {
       en: {
         pageTitle: "SZS R&D Intelligence Portal",
@@ -398,16 +418,17 @@
         passwordLabel: "Password",
         confirmPasswordLabel: "Confirm Password",
         fullNameLabel: "Full Name",
-        loginHint: "Demo only: this static page stores users in your browser for testing.",
-        signupHint: "For production use, connect this sign-up flow to your backend and database.",
+        signupHint: "Your account will be created securely via Supabase Auth.",
         loginSuccess: "Login successful.",
         logoutSuccess: "Logged out.",
-        signupSuccess: "Sign-up successful. You can now log in.",
+        signupSuccess: "Account created. You can now log in.",
         fieldRequired: "Please complete all required fields.",
         passwordMismatch: "Passwords do not match.",
-        userExists: "This Company ID already exists.",
-        userNotFound: "Company ID not found.",
-        wrongPassword: "Incorrect password.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        userExists: "This Company ID is already registered.",
+        invalidCredentials: "Incorrect Company ID or password.",
+        authError: "Authentication error. Please try again.",
+        loginRequired: "Please log in to send messages.",
         loggedInAs: "Logged in as"
       },
       "zh-TW": {
@@ -446,26 +467,29 @@
         passwordLabel: "密碼",
         confirmPasswordLabel: "確認密碼",
         fullNameLabel: "姓名",
-        loginHint: "此版本僅為示範，帳號資料會暫存在您的瀏覽器中。",
-        signupHint: "正式上線時，請將註冊流程連接到後端與資料庫。",
+        signupHint: "您的帳號將透過 Supabase Auth 安全建立。",
         loginSuccess: "登入成功。",
         logoutSuccess: "已登出。",
-        signupSuccess: "註冊成功，您現在可以登入。",
+        signupSuccess: "帳號已建立，您現在可以登入。",
         fieldRequired: "請完整填寫所有欄位。",
         passwordMismatch: "兩次輸入的密碼不一致。",
-        userExists: "此公司工號已存在。",
-        userNotFound: "找不到此公司工號。",
-        wrongPassword: "密碼錯誤。",
+        passwordTooShort: "密碼至少需要 6 個字元。",
+        userExists: "此公司工號已被註冊。",
+        invalidCredentials: "公司工號或密碼錯誤。",
+        authError: "驗證錯誤，請再試一次。",
+        loginRequired: "請先登入再傳送訊息。",
         loggedInAs: "目前登入"
       }
     };
 
     const kbNames = {
-      en: { "bu1": "BU1", "bu3": "BU3", "training": "NEWCOMER TRAINING", "general": "GENERAL R&D" },
-      "zh-TW": { "bu1": "BU1", "bu3": "BU3", "training": "新人訓練", "general": "研發通用" }
+      en: { bu1: "BU1", bu3: "BU3", training: "NEWCOMER TRAINING", general: "GENERAL R&D" },
+      "zh-TW": { bu1: "BU1", bu3: "BU3", training: "新人訓練", general: "研發通用" }
     };
 
-    // --- LANGUAGE ---
+    // ─────────────────────────────────────────
+    // LANGUAGE
+    // ─────────────────────────────────────────
     function applyLanguage(lang) {
       currentLanguage = lang;
       document.documentElement.lang = lang;
@@ -488,10 +512,13 @@
 
     function updateKBLabel() {
       const label = document.getElementById("activeKBLabel");
-      label.innerHTML = translations[currentLanguage].kbLabelPrefix + ' <strong>' + (kbNames[currentLanguage][currentKB] || currentKB.toUpperCase()) + '</strong>';
+      label.innerHTML = translations[currentLanguage].kbLabelPrefix +
+        ' <strong>' + (kbNames[currentLanguage][currentKB] || currentKB.toUpperCase()) + '</strong>';
     }
 
-    // --- CHAT UI ---
+    // ─────────────────────────────────────────
+    // CHAT UI
+    // ─────────────────────────────────────────
     function toggleChat() {
       chatOpen = !chatOpen;
       const popup = document.getElementById("chatPopup");
@@ -504,7 +531,8 @@
       updateKBLabel();
       document.querySelectorAll('.db-card').forEach(c => c.classList.remove('active'));
       if (el) el.classList.add('active');
-      addSystemMessage(translations[currentLanguage].switchedTo + (kbNames[currentLanguage][kb] || kb.toUpperCase()));
+      addSystemMessage(translations[currentLanguage].switchedTo +
+        (kbNames[currentLanguage][kb] || kb.toUpperCase()));
     }
 
     function addMessage(role, text) {
@@ -525,13 +553,31 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // --- AI CHAT (working Supabase connection from file 1) ---
+    // ─────────────────────────────────────────
+    // SEND MESSAGE (with JWT auth)
+    // ─────────────────────────────────────────
     async function sendMessage(event) {
       event.preventDefault();
+
+      // Block if not logged in
+      if (!currentUser) {
+        addSystemMessage(translations[currentLanguage].loginRequired);
+        openAuthModal();
+        return;
+      }
+
       const input = document.getElementById("chatInput");
       const sendBtn = document.getElementById("sendBtn");
       const message = input.value.trim();
       if (!message) return;
+
+      // Get current session JWT
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (!session) {
+        addSystemMessage(translations[currentLanguage].loginRequired);
+        openAuthModal();
+        return;
+      }
 
       addMessage("user", message);
       input.value = "";
@@ -543,6 +589,9 @@
           body: {
             message: message,
             knowledgeBaseId: currentKB
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
           }
         });
 
@@ -558,10 +607,13 @@
       }
     }
 
-    // --- AUTH ---
+    // ─────────────────────────────────────────
+    // AUTH MODAL HELPERS
+    // ─────────────────────────────────────────
     function openAuthModal() {
       document.getElementById("authOverlay").classList.add("show");
       document.body.classList.add("modal-open");
+      clearAuthMessage();
     }
 
     function closeAuthModal() {
@@ -578,73 +630,166 @@
       clearAuthMessage();
     }
 
-    function setAuthMessage(text) { document.getElementById("authMessage").textContent = text; }
-    function clearAuthMessage() { document.getElementById("authMessage").textContent = ""; }
-
-    function getStoredUsers() {
-      const raw = localStorage.getItem("szs_demo_users");
-      return raw ? JSON.parse(raw) : [];
+    function setAuthMessage(text, isError) {
+      const el = document.getElementById("authMessage");
+      el.textContent = text;
+      el.className = "auth-message" + (isError ? " error" : "");
     }
 
-    function saveStoredUsers(users) {
-      localStorage.setItem("szs_demo_users", JSON.stringify(users));
+    function clearAuthMessage() {
+      const el = document.getElementById("authMessage");
+      el.textContent = "";
+      el.className = "auth-message";
     }
 
-    function signupUser(event) {
+    function setSubmitLoading(btnId, loading, defaultTextKey) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      btn.textContent = loading ? "..." : translations[currentLanguage][defaultTextKey];
+    }
+
+    // ─────────────────────────────────────────
+    // SIGN UP — Supabase Auth
+    // ─────────────────────────────────────────
+    async function signupUser(event) {
       event.preventDefault();
       const t = translations[currentLanguage];
-      const name = document.getElementById("signupName").value.trim();
-      const companyId = document.getElementById("signupCompanyId").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      const confirmPassword = document.getElementById("signupConfirmPassword").value;
 
-      if (!name || !companyId || !password || !confirmPassword) { setAuthMessage(t.fieldRequired); return; }
-      if (password !== confirmPassword) { setAuthMessage(t.passwordMismatch); return; }
+      const name       = document.getElementById("signupName").value.trim();
+      const companyId  = document.getElementById("signupCompanyId").value.trim();
+      const password   = document.getElementById("signupPassword").value;
+      const confirmPw  = document.getElementById("signupConfirmPassword").value;
 
-      const users = getStoredUsers();
-      if (users.find(u => u.companyId.toLowerCase() === companyId.toLowerCase())) { setAuthMessage(t.userExists); return; }
+      if (!name || !companyId || !password || !confirmPw) {
+        setAuthMessage(t.fieldRequired, true); return;
+      }
+      if (password !== confirmPw) {
+        setAuthMessage(t.passwordMismatch, true); return;
+      }
+      if (password.length < 6) {
+        setAuthMessage(t.passwordTooShort, true); return;
+      }
 
-      users.push({ name, companyId, password });
-      saveStoredUsers(users);
-      setAuthMessage(t.signupSuccess);
+      setSubmitLoading("signupSubmitBtn", true, "signupBtn");
+      clearAuthMessage();
+
+      // Use companyId as identifier: "E12345@szs.internal"
+      const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
+
+      const { error } = await _supabase.auth.signUp({
+        email: fakeEmail,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+            company_id: companyId
+          }
+        }
+      });
+
+      setSubmitLoading("signupSubmitBtn", false, "signupBtn");
+
+      if (error) {
+        if (error.message.toLowerCase().includes("already registered") ||
+            error.message.toLowerCase().includes("user already")) {
+          setAuthMessage(t.userExists, true);
+        } else {
+          setAuthMessage(error.message, true);
+        }
+        return;
+      }
+
+      setAuthMessage(t.signupSuccess, false);
       document.getElementById("signupForm").reset();
-      switchAuthTab("login");
+      setTimeout(() => switchAuthTab("login"), 1200);
     }
 
-    function loginUser(event) {
+    // ─────────────────────────────────────────
+    // LOGIN — Supabase Auth
+    // ─────────────────────────────────────────
+    async function loginUser(event) {
       event.preventDefault();
       const t = translations[currentLanguage];
+
       const companyId = document.getElementById("loginCompanyId").value.trim();
-      const password = document.getElementById("loginPassword").value;
+      const password  = document.getElementById("loginPassword").value;
 
-      if (!companyId || !password) { setAuthMessage(t.fieldRequired); return; }
+      if (!companyId || !password) { setAuthMessage(t.fieldRequired, true); return; }
 
-      const users = getStoredUsers();
-      const user = users.find(u => u.companyId.toLowerCase() === companyId.toLowerCase());
+      setSubmitLoading("loginSubmitBtn", true, "loginBtn");
+      clearAuthMessage();
 
-      if (!user) { setAuthMessage(t.userNotFound); return; }
-      if (user.password !== password) { setAuthMessage(t.wrongPassword); return; }
+      const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
 
-      currentUser = { name: user.name, companyId: user.companyId };
-      sessionStorage.setItem("szs_demo_current_user", JSON.stringify(currentUser));
-      updateUserUI();
+      const { error } = await _supabase.auth.signInWithPassword({
+        email: fakeEmail,
+        password: password
+      });
+
+      setSubmitLoading("loginSubmitBtn", false, "loginBtn");
+
+      if (error) {
+        if (error.message.toLowerCase().includes("invalid login") ||
+            error.message.toLowerCase().includes("invalid credentials")) {
+          setAuthMessage(t.invalidCredentials, true);
+        } else {
+          setAuthMessage(error.message, true);
+        }
+        return;
+      }
+
+      // onAuthStateChange handles the rest automatically
       closeAuthModal();
-      addSystemMessage(t.loginSuccess);
       document.getElementById("loginForm").reset();
     }
 
-    function logoutUser() {
-      currentUser = null;
-      sessionStorage.removeItem("szs_demo_current_user");
-      updateUserUI();
+    // ─────────────────────────────────────────
+    // LOGOUT — Supabase Auth
+    // ─────────────────────────────────────────
+    async function logoutUser() {
+      await _supabase.auth.signOut();
+      // onAuthStateChange fires and calls updateUserUI()
       addSystemMessage(translations[currentLanguage].logoutSuccess);
     }
 
+    // ─────────────────────────────────────────
+    // AUTH STATE LISTENER
+    // Fires on: page load (session restore), login, logout, token refresh
+    // ─────────────────────────────────────────
+    _supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        // Try to fetch the profile (company_id, full_name) from the profiles table
+        const { data: profile } = await _supabase
+          .from('profiles')
+          .select('company_id, full_name')
+          .eq('id', session.user.id)
+          .single();
+
+        // Fall back to user metadata if profile isn't ready yet
+        const meta = session.user.user_metadata || {};
+        currentUser = {
+          id: session.user.id,
+          companyId: profile?.company_id ?? meta.company_id ?? session.user.email,
+          name: profile?.full_name ?? meta.full_name ?? ''
+        };
+
+        if (event === 'SIGNED_IN') {
+          addSystemMessage(translations[currentLanguage].loginSuccess);
+        }
+      } else {
+        currentUser = null;
+      }
+      updateUserUI();
+    });
+
+    // ─────────────────────────────────────────
+    // USER UI STATE
+    // ─────────────────────────────────────────
     function updateUserUI() {
       const t = translations[currentLanguage];
-      const userChip = document.getElementById("userChip");
+      const userChip    = document.getElementById("userChip");
       const loginOpenBtn = document.getElementById("loginOpenBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
+      const logoutBtn   = document.getElementById("logoutBtn");
 
       if (currentUser) {
         userChip.style.display = "inline-flex";
@@ -658,16 +803,13 @@
       }
     }
 
-    function restoreSession() {
-      const raw = sessionStorage.getItem("szs_demo_current_user");
-      if (raw) currentUser = JSON.parse(raw);
-      updateUserUI();
-    }
-
-    // --- INIT ---
+    // ─────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────
     applyLanguage("en");
-    restoreSession();
     updateKBLabel();
+    // Note: session is restored automatically by onAuthStateChange above.
+    // No need for restoreSession() anymore.
   </script>
 </body>
 </html>
