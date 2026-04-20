@@ -754,30 +754,23 @@
     // Fires on: page load (session restore), login, logout, token refresh
     // ─────────────────────────────────────────
     _supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Try to fetch the profile (company_id, full_name) from the profiles table
-        const { data: profile } = await _supabase
-          .from('profiles')
-          .select('company_id, full_name')
-          .eq('id', session.user.id)
-          .single();
+  if (session?.user) {
+    const meta = session.user.user_metadata || {}
+    currentUser = {
+      id: session.user.id,
+      companyId: meta.company_id ?? session.user.email.replace('@szs.internal', ''),
+      name: meta.full_name ?? ''
+    }
 
-        // Fall back to user metadata if profile isn't ready yet
-        const meta = session.user.user_metadata || {};
-        currentUser = {
-          id: session.user.id,
-          companyId: profile?.company_id ?? meta.company_id ?? session.user.email,
-          name: profile?.full_name ?? meta.full_name ?? ''
-        };
-
-        if (event === 'SIGNED_IN') {
-          addSystemMessage(translations[currentLanguage].loginSuccess);
-        }
-      } else {
-        currentUser = null;
-      }
-      updateUserUI();
-    });
+    if (event === 'SIGNED_IN') {
+      closeAuthModal()
+      addSystemMessage(translations[currentLanguage].loginSuccess)
+    }
+  } else {
+    currentUser = null
+  }
+  updateUserUI()
+})
 
     // ─────────────────────────────────────────
     // USER UI STATE
