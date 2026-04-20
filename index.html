@@ -707,7 +707,7 @@
     // ─────────────────────────────────────────
     // LOGIN — Supabase Auth
     // ─────────────────────────────────────────
-   async function loginUser(event) {
+  async function loginUser(event) {
   event.preventDefault();
   const t = translations[currentLanguage];
   const companyId = document.getElementById("loginCompanyId").value.trim();
@@ -720,23 +720,25 @@
 
   const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
 
-  const { data, error } = await _supabase.auth.signInWithPassword({
+  const { error } = await _supabase.auth.signInWithPassword({
     email: fakeEmail,
     password: password
   });
 
   setSubmitLoading("loginSubmitBtn", false, "loginBtn");
 
-  // ✅ Add these two lines temporarily to see what's happening
-  console.log("Login data:", JSON.stringify(data));
-  console.log("Login error:", JSON.stringify(error));
-
   if (error) {
-    setAuthMessage(error.message, true); // show raw error message
+    if (error.message.toLowerCase().includes("invalid login") ||
+        error.message.toLowerCase().includes("invalid credentials")) {
+      setAuthMessage(t.invalidCredentials, true);
+    } else {
+      setAuthMessage(error.message, true);
+    }
     return;
   }
 
-  closeAuthModal();
+  // ✅ Do NOT call closeAuthModal() here
+  // onAuthStateChange handles closing the modal when SIGNED_IN fires
   document.getElementById("loginForm").reset();
 }
 
