@@ -707,41 +707,38 @@
     // ─────────────────────────────────────────
     // LOGIN — Supabase Auth
     // ─────────────────────────────────────────
-    async function loginUser(event) {
-      event.preventDefault();
-      const t = translations[currentLanguage];
+   async function loginUser(event) {
+  event.preventDefault();
+  const t = translations[currentLanguage];
+  const companyId = document.getElementById("loginCompanyId").value.trim();
+  const password = document.getElementById("loginPassword").value;
 
-      const companyId = document.getElementById("loginCompanyId").value.trim();
-      const password  = document.getElementById("loginPassword").value;
+  if (!companyId || !password) { setAuthMessage(t.fieldRequired, true); return; }
 
-      if (!companyId || !password) { setAuthMessage(t.fieldRequired, true); return; }
+  setSubmitLoading("loginSubmitBtn", true, "loginBtn");
+  clearAuthMessage();
 
-      setSubmitLoading("loginSubmitBtn", true, "loginBtn");
-      clearAuthMessage();
+  const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
 
-      const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
+  const { data, error } = await _supabase.auth.signInWithPassword({
+    email: fakeEmail,
+    password: password
+  });
 
-      const { error } = await _supabase.auth.signInWithPassword({
-        email: fakeEmail,
-        password: password
-      });
+  setSubmitLoading("loginSubmitBtn", false, "loginBtn");
 
-      setSubmitLoading("loginSubmitBtn", false, "loginBtn");
+  // ✅ Add these two lines temporarily to see what's happening
+  console.log("Login data:", JSON.stringify(data));
+  console.log("Login error:", JSON.stringify(error));
 
-      if (error) {
-        if (error.message.toLowerCase().includes("invalid login") ||
-            error.message.toLowerCase().includes("invalid credentials")) {
-          setAuthMessage(t.invalidCredentials, true);
-        } else {
-          setAuthMessage(error.message, true);
-        }
-        return;
-      }
+  if (error) {
+    setAuthMessage(error.message, true); // show raw error message
+    return;
+  }
 
-      // onAuthStateChange handles the rest automatically
-      closeAuthModal();
-      document.getElementById("loginForm").reset();
-    }
+  closeAuthModal();
+  document.getElementById("loginForm").reset();
+}
 
     // ─────────────────────────────────────────
     // LOGOUT — Supabase Auth
