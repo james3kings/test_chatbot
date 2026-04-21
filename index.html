@@ -123,30 +123,8 @@
 
     .card-id { font-family: "Courier New", monospace; font-size: 11px; color: var(--primary-blue); margin-bottom: 15px; display: block; opacity: 0.7; }
     .card-title { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 12px; }
-    .card-desc { font-size: 14px; color: #94a3b8; line-height: 1.7; margin-bottom: 16px; }
+    .card-desc { font-size: 14px; color: #94a3b8; line-height: 1.7; margin-bottom: 25px; }
     .card-action { font-size: 12px; font-weight: 700; color: var(--primary-blue); display: flex; align-items: center; gap: 10px; letter-spacing: 1px; }
-
-    /* ── Feature 7: Document list on card ── */
-    .card-docs {
-      margin-bottom: 16px;
-      display: flex; flex-wrap: wrap; gap: 6px;
-      min-height: 0;
-    }
-    .card-doc-tag {
-      font-size: 10px; padding: 3px 8px;
-      background: rgba(0,210,255,0.08);
-      border: 1px solid rgba(0,210,255,0.2);
-      border-radius: 4px; color: var(--primary-blue);
-      font-family: "Courier New", monospace;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 180px;
-    }
-    .card-doc-loading {
-      font-size: 11px; color: #475569; font-style: italic;
-    }
-    .card-doc-empty {
-      font-size: 11px; color: #475569;
-    }
 
     footer { text-align: center; padding: 4rem 2rem; border-top: 1px solid var(--glass-border); font-size: 12px; color: #475569; letter-spacing: 2px; }
     .security-notice { color: var(--neon-red); margin-top: 15px; font-size: 10px; text-transform: uppercase; }
@@ -166,7 +144,7 @@
     /* Chat Popup */
     .chat-popup {
       position: fixed; right: 24px; bottom: 100px;
-      width: 380px; max-width: calc(100vw - 24px); height: 540px;
+      width: 360px; max-width: calc(100vw - 24px); height: 520px;
       background: var(--chat-bg); border: 1px solid var(--glass-border);
       border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.45);
       overflow: hidden; display: none; flex-direction: column; z-index: 999;
@@ -185,52 +163,15 @@
     .chat-subtitle { font-size: 11px; color: var(--primary-blue); letter-spacing: 1px; }
     .chat-close { background: transparent; border: none; color: #cbd5e1; font-size: 22px; cursor: pointer; }
 
-    .chat-active-kb {
-      padding: 8px 16px; font-size: 12px; color: #94a3b8;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    }
+    .chat-active-kb { padding: 10px 16px; font-size: 12px; color: #94a3b8; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .chat-active-kb strong { color: var(--primary-blue); }
-
-    /* ── Feature 7: Doc list in chat header ── */
-    .chat-doc-list {
-      padding: 8px 16px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex; flex-wrap: wrap; gap: 5px;
-    }
-    .chat-doc-pill {
-      font-size: 10px; padding: 2px 7px;
-      background: rgba(0,210,255,0.07);
-      border: 1px solid rgba(0,210,255,0.18);
-      border-radius: 999px; color: #94a3b8;
-      font-family: "Courier New", monospace;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 160px;
-    }
-    .chat-doc-list-empty { font-size: 11px; color: #475569; font-style: italic; }
 
     .chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
 
-    .message { max-width: 88%; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+    .message { max-width: 85%; padding: 10px 12px; border-radius: 14px; font-size: 14px; line-height: 1.5; word-break: break-word; }
     .message.user { align-self: flex-end; background: var(--user-bubble); border: 1px solid rgba(0,210,255,0.18); }
     .message.ai { align-self: flex-start; background: var(--ai-bubble); border: 1px solid rgba(255,255,255,0.06); }
     .message.system { align-self: center; background: rgba(255,255,255,0.05); font-size: 12px; color: #cbd5e1; border-radius: 999px; padding: 7px 10px; max-width: 95%; }
-
-    /* ── Feature 5: Source tags under AI messages ── */
-    .message-wrapper { display: flex; flex-direction: column; gap: 4px; align-self: flex-start; max-width: 88%; }
-    .message-sources {
-      display: flex; flex-wrap: wrap; gap: 4px; padding: 0 4px;
-    }
-    .source-tag {
-      font-size: 10px; padding: 2px 7px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 4px; color: #64748b;
-      font-family: "Courier New", monospace;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 200px;
-    }
-    .source-tag::before { content: "📄 "; font-size: 9px; }
 
     .chat-input-area { border-top: 1px solid var(--glass-border); padding: 12px; display: flex; gap: 8px; background: rgba(255,255,255,0.02); }
     .chat-input { flex: 1; min-height: 46px; max-height: 100px; resize: none; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); color: #fff; border-radius: 12px; padding: 12px; outline: none; font-size: 14px; }
@@ -314,33 +255,28 @@
   </div>
 
   <div class="grid">
-    <!-- Card doc lists are injected by loadAllCardDocs() on page load -->
     <a class="db-card active" href="#" onclick="selectKB('bu1', this); return false;">
       <span class="card-id">DATA_STREAM // 01</span>
       <div class="card-title" data-i18n="card1Title">BU1 Database</div>
       <p class="card-desc" data-i18n="card1Desc">This database for BU1 handles structured, consistent data.</p>
-      <div class="card-docs" id="docs-bu1"><span class="card-doc-loading">Loading documents...</span></div>
       <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
     </a>
     <a class="db-card" href="#" onclick="selectKB('bu3', this); return false;">
       <span class="card-id">DATA_STREAM // 02</span>
       <div class="card-title" data-i18n="card2Title">BU3 Database</div>
       <p class="card-desc" data-i18n="card2Desc">This database for BU3 handles diverse, flexible data.</p>
-      <div class="card-docs" id="docs-bu3"><span class="card-doc-loading">Loading documents...</span></div>
       <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
     </a>
     <a class="db-card" href="#" onclick="selectKB('training', this); return false;">
       <span class="card-id">DATA_STREAM // 03</span>
       <div class="card-title" data-i18n="card3Title">Newcomer Training</div>
       <p class="card-desc" data-i18n="card3Desc">Protocol induction, onboarding modules, and R&D department standard operating procedures.</p>
-      <div class="card-docs" id="docs-training"><span class="card-doc-loading">Loading documents...</span></div>
       <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
     </a>
     <a class="db-card" href="#" onclick="selectKB('general', this); return false;">
       <span class="card-id">DATA_STREAM // 04</span>
       <div class="card-title" data-i18n="card4Title">General R&D Database</div>
       <p class="card-desc" data-i18n="card4Desc">Universal research findings, legacy technical archives, and collaborative discovery data.</p>
-      <div class="card-docs" id="docs-general"><span class="card-doc-loading">Loading documents...</span></div>
       <div class="card-action" data-i18n="cardAction">ACTIVATE CHAT MODE →</div>
     </a>
   </div>
@@ -368,11 +304,7 @@
       <button class="chat-close" onclick="toggleChat()">×</button>
     </div>
 
-    <!-- Active KB label -->
     <div class="chat-active-kb" id="activeKBLabel"></div>
-
-    <!-- Feature 7: Available docs in chat popup -->
-    <div class="chat-doc-list" id="chatDocList"></div>
 
     <div class="chat-messages" id="chatMessages">
       <div class="message system" id="welcomeSystemMsg"></div>
@@ -444,10 +376,7 @@
     let currentKB = "bu1";
     let chatOpen = false;
     let currentLanguage = "en";
-    let currentUser = null;
-
-    // Cache of doc lists per KB so we don't re-fetch every time
-    const kbDocsCache = {};
+    let currentUser = null; // { id, companyId, name }
 
     // ─────────────────────────────────────────
     // TRANSLATIONS
@@ -500,10 +429,7 @@
         invalidCredentials: "Incorrect Company ID or password.",
         authError: "Authentication error. Please try again.",
         loginRequired: "Please log in to send messages.",
-        loggedInAs: "Logged in as",
-        noDocuments: "No PDFs uploaded yet",
-        sourcesLabel: "Sources:",
-        availableDocs: "Available documents:"
+        loggedInAs: "Logged in as"
       },
       "zh-TW": {
         pageTitle: "SZS 研發智慧入口網站",
@@ -552,10 +478,7 @@
         invalidCredentials: "公司工號或密碼錯誤。",
         authError: "驗證錯誤，請再試一次。",
         loginRequired: "請先登入再傳送訊息。",
-        loggedInAs: "目前登入",
-        noDocuments: "尚未上傳 PDF",
-        sourcesLabel: "來源文件：",
-        availableDocs: "可用文件："
+        loggedInAs: "目前登入"
       }
     };
 
@@ -594,80 +517,13 @@
     }
 
     // ─────────────────────────────────────────
-    // FEATURE 7: Load document lists
-    // Fetches PDF list from Supabase Storage for each KB
-    // Uses anon key — bucket must have a select policy for anon OR authenticated
-    // Falls back gracefully if storage isn't accessible
-    // ─────────────────────────────────────────
-    async function fetchKBDocs(kb) {
-      if (kbDocsCache[kb] !== undefined) return kbDocsCache[kb];
-
-      try {
-        const { data: files, error } = await _supabase.storage
-          .from('documents')
-          .list(kb, { limit: 50 });
-
-        if (error || !files) {
-          kbDocsCache[kb] = [];
-          return [];
-        }
-
-        const pdfs = files.filter(f => f.name.endsWith('.pdf')).map(f => f.name);
-        kbDocsCache[kb] = pdfs;
-        return pdfs;
-      } catch (e) {
-        kbDocsCache[kb] = [];
-        return [];
-      }
-    }
-
-    function renderCardDocs(kb, docs) {
-      const el = document.getElementById('docs-' + kb);
-      if (!el) return;
-      if (docs.length === 0) {
-        el.innerHTML = '<span class="card-doc-empty">' + translations[currentLanguage].noDocuments + '</span>';
-      } else {
-        el.innerHTML = docs.map(name =>
-          '<span class="card-doc-tag" title="' + name + '">' + name + '</span>'
-        ).join('');
-      }
-    }
-
-    function renderChatDocList(docs) {
-      const el = document.getElementById('chatDocList');
-      if (!el) return;
-      if (docs.length === 0) {
-        el.innerHTML = '<span class="chat-doc-list-empty">' + translations[currentLanguage].noDocuments + '</span>';
-      } else {
-        el.innerHTML = docs.map(name =>
-          '<span class="chat-doc-pill" title="' + name + '">' + name + '</span>'
-        ).join('');
-      }
-    }
-
-    async function loadAllCardDocs() {
-      const kbs = ['bu1', 'bu3', 'training', 'general'];
-      for (const kb of kbs) {
-        fetchKBDocs(kb).then(docs => renderCardDocs(kb, docs));
-      }
-    }
-
-    async function refreshChatDocList() {
-      const docs = await fetchKBDocs(currentKB);
-      renderChatDocList(docs);
-    }
-
-    // ─────────────────────────────────────────
     // CHAT UI
     // ─────────────────────────────────────────
     function toggleChat() {
       chatOpen = !chatOpen;
       const popup = document.getElementById("chatPopup");
       popup.classList.toggle("open", chatOpen);
-      if (chatOpen) {
-        document.getElementById("chatInput").focus();
-        refreshChatDocList(); // refresh doc list when chat opens
-      }
+      if (chatOpen) document.getElementById("chatInput").focus();
     }
 
     function selectKB(kb, el) {
@@ -677,7 +533,6 @@
       if (el) el.classList.add('active');
       addSystemMessage(translations[currentLanguage].switchedTo +
         (kbNames[currentLanguage][kb] || kb.toUpperCase()));
-      refreshChatDocList(); // update doc list in chat when KB changes
     }
 
     function addMessage(role, text) {
@@ -686,44 +541,6 @@
       div.className = "message " + role;
       div.textContent = text;
       container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-      return div;
-    }
-
-    // Feature 5: Add AI message with optional source tags below it
-    function addAIMessage(text, sources) {
-      const container = document.getElementById("chatMessages");
-
-      if (sources && sources.length > 0) {
-        // Wrap message + source tags in a wrapper
-        const wrapper = document.createElement("div");
-        wrapper.className = "message-wrapper";
-
-        const msgDiv = document.createElement("div");
-        msgDiv.className = "message ai";
-        msgDiv.textContent = text;
-
-        const sourcesDiv = document.createElement("div");
-        sourcesDiv.className = "message-sources";
-        sources.forEach(name => {
-          const tag = document.createElement("span");
-          tag.className = "source-tag";
-          tag.title = name;
-          tag.textContent = name;
-          sourcesDiv.appendChild(tag);
-        });
-
-        wrapper.appendChild(msgDiv);
-        wrapper.appendChild(sourcesDiv);
-        container.appendChild(wrapper);
-      } else {
-        // No sources — plain AI message
-        const div = document.createElement("div");
-        div.className = "message ai";
-        div.textContent = text;
-        container.appendChild(div);
-      }
-
       container.scrollTop = container.scrollHeight;
     }
 
@@ -737,11 +554,12 @@
     }
 
     // ─────────────────────────────────────────
-    // SEND MESSAGE
+    // SEND MESSAGE (with JWT auth)
     // ─────────────────────────────────────────
     async function sendMessage(event) {
       event.preventDefault();
 
+      // Block if not logged in
       if (!currentUser) {
         addSystemMessage(translations[currentLanguage].loginRequired);
         openAuthModal();
@@ -753,6 +571,7 @@
       const message = input.value.trim();
       if (!message) return;
 
+      // Get current session JWT
       const { data: { session } } = await _supabase.auth.getSession();
       if (!session) {
         addSystemMessage(translations[currentLanguage].loginRequired);
@@ -767,14 +586,17 @@
 
       try {
         const { data, error } = await _supabase.functions.invoke('ai-chat', {
-          body: { message, knowledgeBaseId: currentKB },
-          headers: { Authorization: `Bearer ${session.access_token}` }
+          body: {
+            message: message,
+            knowledgeBaseId: currentKB
+          },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
         });
 
         if (error) throw error;
-
-        // Feature 5: pass sources from Edge Function response
-        addAIMessage(data.reply || "No response from AI.", data.sources || []);
+        addMessage("ai", data.reply || "No response from AI.");
 
       } catch (err) {
         console.error("AI Error:", err);
@@ -827,36 +649,53 @@
     }
 
     // ─────────────────────────────────────────
-    // SIGN UP
+    // SIGN UP — Supabase Auth
     // ─────────────────────────────────────────
     async function signupUser(event) {
       event.preventDefault();
       const t = translations[currentLanguage];
-      const name      = document.getElementById("signupName").value.trim();
-      const companyId = document.getElementById("signupCompanyId").value.trim();
-      const password  = document.getElementById("signupPassword").value;
-      const confirmPw = document.getElementById("signupConfirmPassword").value;
 
-      if (!name || !companyId || !password || !confirmPw) { setAuthMessage(t.fieldRequired, true); return; }
-      if (password !== confirmPw) { setAuthMessage(t.passwordMismatch, true); return; }
-      if (password.length < 6) { setAuthMessage(t.passwordTooShort, true); return; }
+      const name       = document.getElementById("signupName").value.trim();
+      const companyId  = document.getElementById("signupCompanyId").value.trim();
+      const password   = document.getElementById("signupPassword").value;
+      const confirmPw  = document.getElementById("signupConfirmPassword").value;
+
+      if (!name || !companyId || !password || !confirmPw) {
+        setAuthMessage(t.fieldRequired, true); return;
+      }
+      if (password !== confirmPw) {
+        setAuthMessage(t.passwordMismatch, true); return;
+      }
+      if (password.length < 6) {
+        setAuthMessage(t.passwordTooShort, true); return;
+      }
 
       setSubmitLoading("signupSubmitBtn", true, "signupBtn");
       clearAuthMessage();
 
+      // Use companyId as identifier: "E12345@szs.internal"
+      const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
+
       const { error } = await _supabase.auth.signUp({
-        email: `${companyId.toLowerCase()}@szs.internal`,
-        password,
-        options: { data: { full_name: name, company_id: companyId } }
+        email: fakeEmail,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+            company_id: companyId
+          }
+        }
       });
 
       setSubmitLoading("signupSubmitBtn", false, "signupBtn");
 
       if (error) {
-        setAuthMessage(
-          error.message.toLowerCase().includes("already registered") ? t.userExists : error.message,
-          true
-        );
+        if (error.message.toLowerCase().includes("already registered") ||
+            error.message.toLowerCase().includes("user already")) {
+          setAuthMessage(t.userExists, true);
+        } else {
+          setAuthMessage(error.message, true);
+        }
         return;
       }
 
@@ -866,80 +705,83 @@
     }
 
     // ─────────────────────────────────────────
-    // LOGIN
+    // LOGIN — Supabase Auth
     // ─────────────────────────────────────────
-    async function loginUser(event) {
-      event.preventDefault();
-      const t = translations[currentLanguage];
-      const companyId = document.getElementById("loginCompanyId").value.trim();
-      const password  = document.getElementById("loginPassword").value;
+  async function loginUser(event) {
+  event.preventDefault();
+  const t = translations[currentLanguage];
+  const companyId = document.getElementById("loginCompanyId").value.trim();
+  const password = document.getElementById("loginPassword").value;
 
-      if (!companyId || !password) { setAuthMessage(t.fieldRequired, true); return; }
+  if (!companyId || !password) { setAuthMessage(t.fieldRequired, true); return; }
 
-      setSubmitLoading("loginSubmitBtn", true, "loginBtn");
-      clearAuthMessage();
+  setSubmitLoading("loginSubmitBtn", true, "loginBtn");
+  clearAuthMessage();
 
-      const { error } = await _supabase.auth.signInWithPassword({
-        email: `${companyId.toLowerCase()}@szs.internal`,
-        password
-      });
+  const fakeEmail = `${companyId.toLowerCase()}@szs.internal`;
 
-      setSubmitLoading("loginSubmitBtn", false, "loginBtn");
+  const { error } = await _supabase.auth.signInWithPassword({
+    email: fakeEmail,
+    password: password
+  });
 
-      if (error) {
-        setAuthMessage(
-          error.message.toLowerCase().includes("invalid login") ||
-          error.message.toLowerCase().includes("invalid credentials")
-            ? t.invalidCredentials : error.message,
-          true
-        );
-        return;
-      }
+  setSubmitLoading("loginSubmitBtn", false, "loginBtn");
 
-      // onAuthStateChange handles closing the modal
-      document.getElementById("loginForm").reset();
+  if (error) {
+    if (error.message.toLowerCase().includes("invalid login") ||
+        error.message.toLowerCase().includes("invalid credentials")) {
+      setAuthMessage(t.invalidCredentials, true);
+    } else {
+      setAuthMessage(error.message, true);
     }
+    return;
+  }
+
+  // ✅ Do NOT call closeAuthModal() here
+  // onAuthStateChange handles closing the modal when SIGNED_IN fires
+  document.getElementById("loginForm").reset();
+}
 
     // ─────────────────────────────────────────
-    // LOGOUT
+    // LOGOUT — Supabase Auth
     // ─────────────────────────────────────────
     async function logoutUser() {
       await _supabase.auth.signOut();
+      // onAuthStateChange fires and calls updateUserUI()
       addSystemMessage(translations[currentLanguage].logoutSuccess);
     }
 
     // ─────────────────────────────────────────
     // AUTH STATE LISTENER
+    // Fires on: page load (session restore), login, logout, token refresh
     // ─────────────────────────────────────────
     _supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        currentUser = {
-          id: session.user.id,
-          companyId: meta.company_id ?? session.user.email.replace('@szs.internal', ''),
-          name: meta.full_name ?? ''
-        };
-        if (event === 'SIGNED_IN') {
-          closeAuthModal();
-          addSystemMessage(translations[currentLanguage].loginSuccess);
-          // Load doc lists after login (storage may require auth)
-          loadAllCardDocs();
-          refreshChatDocList();
-        }
-      } else {
-        currentUser = null;
-      }
-      updateUserUI();
-    });
+  if (session?.user) {
+    const meta = session.user.user_metadata || {}
+    currentUser = {
+      id: session.user.id,
+      companyId: meta.company_id ?? session.user.email.replace('@szs.internal', ''),
+      name: meta.full_name ?? ''
+    }
+
+    if (event === 'SIGNED_IN') {
+      closeAuthModal()
+      addSystemMessage(translations[currentLanguage].loginSuccess)
+    }
+  } else {
+    currentUser = null
+  }
+  updateUserUI()
+})
 
     // ─────────────────────────────────────────
     // USER UI STATE
     // ─────────────────────────────────────────
     function updateUserUI() {
       const t = translations[currentLanguage];
-      const userChip     = document.getElementById("userChip");
+      const userChip    = document.getElementById("userChip");
       const loginOpenBtn = document.getElementById("loginOpenBtn");
-      const logoutBtn    = document.getElementById("logoutBtn");
+      const logoutBtn   = document.getElementById("logoutBtn");
 
       if (currentUser) {
         userChip.style.display = "inline-flex";
@@ -958,8 +800,8 @@
     // ─────────────────────────────────────────
     applyLanguage("en");
     updateKBLabel();
-    loadAllCardDocs();     // load doc tags on cards immediately
-    refreshChatDocList();  // load doc list in chat popup
+    // Note: session is restored automatically by onAuthStateChange above.
+    // No need for restoreSession() anymore.
   </script>
 </body>
 </html>
