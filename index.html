@@ -536,13 +536,28 @@
     }
 
     function addMessage(role, text) {
-      const container = document.getElementById("chatMessages");
-      const div = document.createElement("div");
-      div.className = "message " + role;
-      div.textContent = text;
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
-    }
+  const container = document.getElementById("chatMessages");
+  const div = document.createElement("div");
+  div.className = "message " + role;
+
+  if (role === "ai") {
+    div.innerHTML = formatAIMessage(text);
+  } else {
+    div.textContent = text;
+  }
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function formatAIMessage(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<div style="display:flex;gap:8px;margin:3px 0"><span style="color:var(--primary-blue);font-weight:700;min-width:16px">$1.</span><span>$2</span></div>')
+    .replace(/^[•\-\*]\s+(.+)$/gm, '<div style="display:flex;gap:8px;margin:3px 0"><span style="color:var(--primary-blue);font-weight:700">•</span><span>$1</span></div>')
+    .replace(/\n{2,}/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
 
     function addSystemMessage(text) {
       const container = document.getElementById("chatMessages");
