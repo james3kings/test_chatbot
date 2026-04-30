@@ -611,7 +611,10 @@ function formatAIMessage(text) {
         });
 
         if (error) throw error;
-        addMessage("ai", data.reply || "No response from AI.");
+        if (data.openUrl) {
+  window.open(data.openUrl, '_blank');
+}
+addMessage("ai", data.reply || "No response from AI.");
 
       } catch (err) {
         console.error("AI Error:", err);
