@@ -312,7 +312,7 @@
     </div>
 
     <form class="chat-input-area" onsubmit="sendMessage(event)">
-      <textarea id="chatInput" class="chat-input" placeholder="Type your question..." rows="1"></textarea>
+      <textarea id="chatInput" class="chat-input" placeholder="Type your question..." rows="1" onkeydown="handleChatKey(event)"></textarea>
       <button type="submit" class="chat-send" id="sendBtn" data-i18n="sendBtn">Send</button>
     </form>
   </div>
@@ -567,6 +567,13 @@ function formatAIMessage(text) {
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
+    function handleChatKey(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage(event);
+  }
+}
 
     // ─────────────────────────────────────────
     // SEND MESSAGE (with JWT auth)
