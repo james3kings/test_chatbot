@@ -227,6 +227,47 @@
       .chat-popup { right: 12px; left: 12px; bottom: 88px; width: auto; height: 70vh; }
       .chat-toggle-btn { right: 16px; bottom: 16px; }
     }
+
+    .aria-teaser {
+  position: fixed; right: 96px; bottom: 28px;
+  background: rgba(10,14,26,0.96);
+  border: 1px solid rgba(0,210,255,0.35);
+  border-radius: 16px 16px 4px 16px;
+  padding: 12px 16px; max-width: 230px;
+  z-index: 998; display: flex; flex-direction: column; gap: 6px;
+  animation: ariaPopIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  box-shadow: 0 4px 24px rgba(0,210,255,0.1);
+}
+.aria-teaser-close {
+  position: absolute; top: -8px; right: -8px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(255,62,62,0.15); border: 1px solid rgba(255,62,62,0.4);
+  color: #ff3e3e; cursor: pointer; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.aria-teaser-row { display: flex; align-items: center; gap: 8px; }
+.aria-teaser-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #00d2ff;
+  animation: ariaPulse 1.6s ease-in-out infinite; flex-shrink: 0;
+}
+.aria-teaser-name { font-size: 11px; font-weight: 700; color: #00d2ff; letter-spacing: 0.08em; text-transform: uppercase; }
+.aria-teaser-text { font-size: 13px; color: #e2e8f0; line-height: 1.5; }
+.aria-teaser-text strong { color: #00d2ff; }
+.aria-teaser-cta { font-size: 11px; color: rgba(0,210,255,0.7); display: flex; align-items: center; gap: 4px; }
+.aria-arrow { animation: ariaArrow 1s ease-in-out infinite; display: inline-block; }
+
+@keyframes ariaPopIn {
+  from { opacity: 0; transform: scale(0.7) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes ariaPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+@keyframes ariaArrow {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
   </style>
 </head>
 <body>
@@ -291,6 +332,18 @@
   <button class="chat-toggle-btn" onclick="toggleChat()" title="Open Chat">
     <img src="chatlogo.png" alt="SZS Chat" class="chat-toggle-logo">
   </button>
+
+  <div class="aria-teaser" id="ariaTeaserBubble">
+  <button class="aria-teaser-close" onclick="dismissTeaser()">×</button>
+  <div class="aria-teaser-row">
+    <span class="aria-teaser-dot"></span>
+    <span class="aria-teaser-name">ARIA online</span>
+  </div>
+  <div class="aria-teaser-text">
+    Hi there! 👋 I'm <strong>ARIA</strong>, your R&D intelligence assistant. Got a burning question?
+  </div>
+  <div class="aria-teaser-cta">Tap to chat <span class="aria-arrow">→</span></div>
+</div>
 
   <div class="chat-popup" id="chatPopup">
     <div class="chat-header">
@@ -523,12 +576,19 @@
     // ─────────────────────────────────────────
     // CHAT UI
     // ─────────────────────────────────────────
-    function toggleChat() {
-      chatOpen = !chatOpen;
-      const popup = document.getElementById("chatPopup");
-      popup.classList.toggle("open", chatOpen);
-      if (chatOpen) document.getElementById("chatInput").focus();
-    }
+   function dismissTeaser() {
+  document.getElementById('ariaTeaserBubble').style.display = 'none';
+}
+
+// Hide teaser when chat is opened
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById("chatPopup").classList.toggle("open", chatOpen);
+  if (chatOpen) {
+    document.getElementById("chatInput").focus();
+    dismissTeaser(); // ← add this line
+  }
+}
 
     function selectKB(kb, el) {
       currentKB = kb;
