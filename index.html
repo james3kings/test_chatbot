@@ -269,7 +269,7 @@
   50% { transform: translateX(5px); }
 }
     .message.ai.streaming::after {
-  content: "█";
+  content: "████";
   display: inline-block;
   color: var(--primary-blue);
   font-size: 16px;
@@ -277,11 +277,11 @@
   animation: ai-matrix 0.4s step-end infinite;
 }
 @keyframes ai-matrix {
-  0%   { content: "█"; }
-  25%  { content: "▓"; }
-  50%  { content: "▒"; }
-  75%  { content: "░"; }
-  100% { content: "█"; }
+  0%   { content: "████"; }
+  25%  { content: "▓▓▓▓"; }
+  50%  { content: "▒▒▒▒"; }
+  75%  { content: "░░░░"; }
+  100% { content: "████"; }
 }
     
   </style>
