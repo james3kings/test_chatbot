@@ -268,6 +268,14 @@
   0%, 100% { transform: translateX(0); }
   50% { transform: translateX(5px); }
 }
+    .message.ai.streaming::after {
+  content: "▋";
+  display: inline-block;
+  color: var(--primary-blue);
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+    
   </style>
 </head>
 <body>
@@ -643,58 +651,105 @@ function formatAIMessage(text) {
     // SEND MESSAGE (with JWT auth)
     // ─────────────────────────────────────────
     async function sendMessage(event) {
-      event.preventDefault();
+  event.preventDefault();
 
-      // Block if not logged in
-      if (!currentUser) {
-        addSystemMessage(translations[currentLanguage].loginRequired);
-        openAuthModal();
-        return;
+  if (!currentUser) {
+    addSystemMessage(translations[currentLanguage].loginRequired);
+    openAuthModal();
+    return;
+  }
+
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const message = input.value.trim();
+  if (!message) return;
+
+  const { data: { session } } = await _supabase.auth.getSession();
+  if (!session) { openAuthModal(); return; }
+
+  addMessage("user", message);
+  input.value = "";
+  sendBtn.disabled = true;
+  sendBtn.textContent = translations[currentLanguage].sending;
+
+  // Create empty AI bubble to stream into
+  const container = document.getElementById("chatMessages");
+  const bubble = document.createElement("div");
+  bubble.className = "message ai streaming";
+  container.appendChild(bubble);
+  container.scrollTop = container.scrollHeight;
+
+  try {
+    const response = await fetch(
+      `https://ngxkiuokbulqezxvrkxq.supabase.co/functions/v1/ai-chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ message, knowledgeBaseId: currentKB })
       }
+    );
 
-      const input = document.getElementById("chatInput");
-      const sendBtn = document.getElementById("sendBtn");
-      const message = input.value.trim();
-      if (!message) return;
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: "Request failed" }));
+      throw new Error(err.error || "Request failed");
+    }
 
-      // Get current session JWT
-      const { data: { session } } = await _supabase.auth.getSession();
-      if (!session) {
-        addSystemMessage(translations[currentLanguage].loginRequired);
-        openAuthModal();
-        return;
-      }
+    // Read sources from response header
+    const sourcesHeader = response.headers.get("X-Sources");
+    const sources = sourcesHeader ? JSON.parse(sourcesHeader) : [];
 
-      addMessage("user", message);
-      input.value = "";
-      sendBtn.disabled = true;
-      sendBtn.textContent = translations[currentLanguage].sending;
+    // Read the stream
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
 
-      try {
-        const { data, error } = await _supabase.functions.invoke('ai-chat', {
-          body: {
-            message: message,
-            knowledgeBaseId: currentKB
-          },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
-          }
-        });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      fullText += chunk;
+      bubble.innerHTML = formatAIMessage(fullText);
+      container.scrollTop = container.scrollHeight;
+    }
 
-        if (error) throw error;
-        if (data.openUrl) {
-  window.open(data.openUrl, '_blank');
-}
-addMessage("ai", data.reply || "No response from AI.");
-
-      } catch (err) {
-        console.error("AI Error:", err);
-        addSystemMessage(translations[currentLanguage].connectionError + ": " + err.message);
-      } finally {
-        sendBtn.disabled = false;
-        sendBtn.textContent = translations[currentLanguage].sendBtn;
+    // Handle openUrl command from website links
+    if (fullText.startsWith("__OPEN_URL__")) {
+      const urlMatch = fullText.match(/__OPEN_URL__(.+?)__TITLE__(.+)/);
+      if (urlMatch) {
+        bubble.innerHTML = formatAIMessage(`Opening **${urlMatch[2]}**...`);
+        window.open(urlMatch[1], '_blank');
       }
     }
+
+    // Remove streaming cursor
+    bubble.classList.remove("streaming");
+    bubble.innerHTML = formatAIMessage(fullText);
+
+    // Add source tags if any
+    if (sources.length > 0) {
+      const srcDiv = document.createElement("div");
+      srcDiv.style.cssText = "display:flex;flex-wrap:wrap;gap:4px;padding:4px 4px 0";
+      sources.forEach(name => {
+        const tag = document.createElement("span");
+        tag.style.cssText = "font-size:10px;padding:2px 7px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:#64748b;font-family:monospace";
+        tag.textContent = "📄 " + name;
+        srcDiv.appendChild(tag);
+      });
+      bubble.after(srcDiv);
+    }
+
+  } catch (err) {
+    console.error("Error:", err);
+    bubble.remove();
+    addSystemMessage(translations[currentLanguage].connectionError + ": " + err.message);
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = translations[currentLanguage].sendBtn;
+  }
+}
 
     // ─────────────────────────────────────────
     // AUTH MODAL HELPERS
