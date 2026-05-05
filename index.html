@@ -269,12 +269,20 @@
   50% { transform: translateX(5px); }
 }
     .message.ai.streaming::after {
-  content: "▋";
+  content: "█";
   display: inline-block;
   color: var(--primary-blue);
-  animation: blink 0.7s step-end infinite;
+  font-size: 16px;
+  margin-left: 1px;
+  animation: ai-matrix 0.4s step-end infinite;
 }
-@keyframes blink { 50% { opacity: 0; } }
+@keyframes ai-matrix {
+  0%   { content: "█"; }
+  25%  { content: "▓"; }
+  50%  { content: "▒"; }
+  75%  { content: "░"; }
+  100% { content: "█"; }
+}
     
   </style>
 </head>
