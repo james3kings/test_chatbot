@@ -891,6 +891,7 @@ function formatAIMessage(text) {
 
   // ✅ Do NOT call closeAuthModal() here
   // onAuthStateChange handles closing the modal when SIGNED_IN fires
+  sessionStorage.setItem('szs_manual_login', 'true')
   document.getElementById("loginForm").reset();
 }
 
@@ -918,7 +919,13 @@ function formatAIMessage(text) {
 
     if (event === 'SIGNED_IN') {
       closeAuthModal()
-      addSystemMessage(translations[currentLanguage].loginSuccess)
+      // ✅ Only show "Login successful" if user just logged in manually
+      // TOKEN_REFRESHED and INITIAL_SESSION are silent session restores
+      const isManualLogin = sessionStorage.getItem('szs_manual_login')
+      if (isManualLogin) {
+        addSystemMessage(translations[currentLanguage].loginSuccess)
+        sessionStorage.removeItem('szs_manual_login')
+      }
     }
   } else {
     currentUser = null
