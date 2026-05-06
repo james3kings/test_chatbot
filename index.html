@@ -283,6 +283,22 @@
   75%  { content: "░░░░"; }
   100% { content: "████"; }
 }
+
+    .chat-clear-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #475569;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.chat-clear-btn:hover {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
     
   </style>
 </head>
@@ -375,7 +391,10 @@
       <button class="chat-close" onclick="toggleChat()">×</button>
     </div>
 
-    <div class="chat-active-kb" id="activeKBLabel"></div>
+    <div class="chat-active-kb" id="activeKBLabel" style="display:flex;align-items:center;justify-content:space-between;">
+  <span id="activeKBText"></span>
+  <button class="chat-clear-btn" onclick="clearChat()">↺ New chat</button>
+</div>
 
     <div class="chat-messages" id="chatMessages">
       <div class="message system" id="welcomeSystemMsg"></div>
@@ -450,6 +469,7 @@
     let chatOpen = false;
     let currentLanguage = "en";
     let currentUser = null; // { id, companyId, name }
+    let chatHistory = []; // stores { role, content } for conversation memory
 
     // ─────────────────────────────────────────
     // TRANSLATIONS
@@ -584,10 +604,12 @@
     }
 
     function updateKBLabel() {
-      const label = document.getElementById("activeKBLabel");
-      label.innerHTML = translations[currentLanguage].kbLabelPrefix +
-        ' <strong>' + (kbNames[currentLanguage][currentKB] || currentKB.toUpperCase()) + '</strong>';
-    }
+  const el = document.getElementById("activeKBText");
+  if (el) {
+    el.innerHTML = translations[currentLanguage].kbLabelPrefix +
+      ' <strong>' + (kbNames[currentLanguage][currentKB] || currentKB.toUpperCase()) + '</strong>';
+  }
+}
 
     // ─────────────────────────────────────────
     // CHAT UI
@@ -647,6 +669,20 @@ function formatAIMessage(text) {
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+    function clearChat() {
+  chatHistory = [];
+  const container = document.getElementById("chatMessages");
+  container.innerHTML = '';
+  const sysMsg = document.createElement("div");
+  sysMsg.className = "message system";
+  sysMsg.textContent = translations[currentLanguage].welcomeSystem;
+  const aiMsg = document.createElement("div");
+  aiMsg.className = "message ai";
+  aiMsg.innerHTML = formatAIMessage(translations[currentLanguage].welcomeAi);
+  container.appendChild(sysMsg);
+  container.appendChild(aiMsg);
+  addSystemMessage("New conversation started.");
+}
 
     function handleChatKey(event) {
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -676,6 +712,7 @@ function formatAIMessage(text) {
   if (!session) { openAuthModal(); return; }
 
   addMessage("user", message);
+  chatHistory.push({ role: "user", parts: [{ text: message }] });
   input.value = "";
   sendBtn.disabled = true;
   sendBtn.textContent = translations[currentLanguage].sending;
@@ -696,7 +733,11 @@ function formatAIMessage(text) {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ message, knowledgeBaseId: currentKB })
+        body: JSON.stringify({
+        message,
+       knowledgeBaseId: currentKB,
+       history: chatHistory.slice(-10) // send last 10 messages max
+          })
       }
     );
 
@@ -734,6 +775,10 @@ function formatAIMessage(text) {
 
     // Remove streaming cursor
     bubble.classList.remove("streaming");
+    // ✅ Save AI reply to history
+    if (!fullText.startsWith("__OPEN_URL__")) {
+    chatHistory.push({ role: "model", parts: [{ text: fullText }] });
+       }
     bubble.innerHTML = formatAIMessage(fullText);
 
     // Add source tags if any
