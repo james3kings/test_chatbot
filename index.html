@@ -319,7 +319,7 @@
       <button class="logout-btn" id="logoutBtn" onclick="logoutUser()" style="display:none;" data-i18n="logoutBtn">Logout</button>
       <button class="login-open-btn" id="loginOpenBtn" onclick="openAuthModal()" data-i18n="loginBtn">Login</button>
       <button class="lang-toggle" onclick="toggleLanguage()" id="langToggleBtn">繁中</button>
-      <div class="header-badge" data-i18n="headerBadge">LINK ESTABLISHED</div>
+      <button class="header-badge" onclick="goToAgentPage()" style="cursor:pointer;background:rgba(0,210,255,0.05);" data-i18n="headerBadge">LINK ESTABLISHED</button>
     </div>
   </header>
 
@@ -408,7 +408,31 @@
     <div style="padding:7px 14px;border-top:1px solid rgba(255,255,255,0.06);font-size:10px;color:#475569;text-align:center;letter-spacing:0.03em;">
       ⚠ AI can make mistakes — always double-check important responses.
   </div>
-
+</div>
+  
+<!-- AGENT PAGE -->
+<div id="agentPage" style="display:none;">
+  <div style="max-width:800px;margin:0 auto;padding:60px 5%;">
+    <div style="margin-bottom:40px;">
+      <button onclick="goToMainPage()" style="font-family:'Courier New',monospace;font-size:11px;color:#94a3b8;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 14px;cursor:pointer;letter-spacing:0.1em;">← BACK</button>
+    </div>
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:var(--primary-blue);letter-spacing:0.3em;margin-bottom:12px;">AI AGENT WORKSPACE</div>
+    <h1 style="font-size:36px;font-weight:300;color:#fff;margin-bottom:8px;">Task Agent <span style="color:var(--primary-blue);">Beta</span></h1>
+    <p style="font-size:14px;color:#94a3b8;margin-bottom:48px;line-height:1.6;">Describe a task and the AI agent will execute it. This workspace is connected to your knowledge base.</p>
+    <div style="background:rgba(17,24,39,0.7);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;margin-bottom:20px;">
+      <div style="font-family:'Courier New',monospace;font-size:10px;color:#64748b;letter-spacing:0.2em;margin-bottom:12px;">TASK PROMPT</div>
+      <textarea id="agentPrompt" placeholder="Describe what you want the agent to do..." style="width:100%;min-height:120px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px;color:#fff;font-size:14px;font-family:inherit;resize:vertical;outline:none;line-height:1.6;" onkeydown="handleAgentKey(event)"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+        <button onclick="runAgent()" id="agentRunBtn" style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.1em;padding:10px 24px;border:1px solid rgba(0,210,255,0.4);border-radius:8px;background:rgba(0,210,255,0.1);color:var(--primary-blue);cursor:pointer;">RUN AGENT →</button>
+      </div>
+    </div>
+    <div id="agentOutput" style="display:none;background:rgba(17,24,39,0.7);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:24px;">
+      <div style="font-family:'Courier New',monospace;font-size:10px;color:#64748b;letter-spacing:0.2em;margin-bottom:12px;">AGENT OUTPUT</div>
+      <div id="agentOutputText" style="font-size:14px;color:#e2e8f0;line-height:1.7;"></div>
+    </div>
+  </div>
+</div>
+  
   <!-- Auth Modal -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-modal">
@@ -998,6 +1022,47 @@ function formatAIMessage(text) {
         logoutBtn.style.display = "none";
       }
     }
+
+    // ─────────────────────────────────────────
+// AGENT PAGE
+// ─────────────────────────────────────────
+function goToAgentPage() {
+  document.querySelector('.hero').style.display = 'none';
+  document.querySelector('.grid').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+  document.getElementById('agentPage').style.display = 'block';
+  document.querySelector('.chat-toggle-btn').style.display = 'none';
+  document.getElementById('rizenTeaserBubble').style.display = 'none';
+}
+
+function goToMainPage() {
+  document.querySelector('.hero').style.display = '';
+  document.querySelector('.grid').style.display = '';
+  document.querySelector('footer').style.display = '';
+  document.getElementById('agentPage').style.display = 'none';
+  document.querySelector('.chat-toggle-btn').style.display = '';
+}
+
+function handleAgentKey(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    runAgent();
+  }
+}
+
+function runAgent() {
+  const prompt = document.getElementById('agentPrompt').value.trim();
+  if (!prompt) return;
+  const btn = document.getElementById('agentRunBtn');
+  btn.textContent = 'RUNNING...';
+  btn.disabled = true;
+  setTimeout(() => {
+    document.getElementById('agentOutput').style.display = 'block';
+    document.getElementById('agentOutputText').textContent = '[ Agent backend not connected yet. This output area will show results once the Edge Function is wired up. ]';
+    btn.textContent = 'RUN AGENT →';
+    btn.disabled = false;
+  }, 800);
+}
 
     // ─────────────────────────────────────────
     // INIT
