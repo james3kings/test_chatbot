@@ -35,6 +35,21 @@
       --r:         10px;
     }
 
+    /* ── LIGHT MODE TOKENS ── */
+    body.light-mode {
+      --ink:       #f5f7fb;
+      --ink2:      #ffffff;
+      --surface:   #ffffff;
+      --lift:      #f1f5f9;
+      --rim:       rgba(15,23,42,0.08);
+      --rim2:      rgba(15,23,42,0.14);
+      --accent:    #008bb5;
+      --accent2:   #e11d48;
+      --muted:     #94a3b8;
+      --text:      #111827;
+      --text2:     #475569;
+    }
+
     /* ── RESET ── */
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html { scroll-behavior: smooth; }
@@ -44,6 +59,7 @@
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
     }
     body.modal-open { overflow: hidden; }
 
@@ -104,6 +120,69 @@
       border:1px solid rgba(0,229,255,0.2); border-radius:999px;
       padding: 6px 14px; background: rgba(0,229,255,0.05);
       display:none;
+    }
+
+    /* ── LIGHT MODE COMPONENT OVERRIDES ── */
+    body.light-mode::after {
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,139,181,0.08) 0%, transparent 70%);
+    }
+
+    body.light-mode header,
+    body.light-mode .agent-bar {
+      background: rgba(255,255,255,0.9);
+    }
+
+    body.light-mode .brand-name,
+    body.light-mode .hero-title,
+    body.light-mode .card-name,
+    body.light-mode .chat-head-name,
+    body.light-mode .agent-title,
+    body.light-mode .output-title,
+    body.light-mode .auth-htitle {
+      color: #111827;
+    }
+
+    body.light-mode .stream-card,
+    body.light-mode .chat-popup,
+    body.light-mode .rizen-teaser,
+    body.light-mode .agent-left,
+    body.light-mode .agent-right,
+    body.light-mode .agent-center,
+    body.light-mode .output-modal,
+    body.light-mode .auth-box {
+      box-shadow: 0 8px 24px rgba(15,23,42,0.06);
+    }
+
+    body.light-mode .chat-toggle {
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 8px 24px rgba(15,23,42,0.12);
+    }
+
+    body.light-mode .chat-textarea,
+    body.light-mode .agent-input-box,
+    body.light-mode .src-search,
+    body.light-mode .field input {
+      background: rgba(15,23,42,0.03);
+      color: #111827;
+    }
+
+    body.light-mode .chat-textarea,
+    body.light-mode .agent-textarea {
+      color: #111827;
+    }
+
+    body.light-mode .msg.user,
+    body.light-mode .agent-msg.user .agent-bubble {
+      background: rgba(0,139,181,0.08);
+      border-color: rgba(0,139,181,0.18);
+    }
+
+    body.light-mode .src-item:hover {
+      background: rgba(15,23,42,0.04);
+    }
+
+    body.light-mode .src-item.active {
+      background: rgba(0,139,181,0.08);
     }
 
     /* ── MAIN PAGE ── */
@@ -577,6 +656,7 @@
       <div class="nav-chip" id="userChip"></div>
       <button class="nav-btn" id="logoutBtn" onclick="doLogout()" style="display:none;" data-i18n="logoutBtn">Logout</button>
       <button class="nav-btn" id="loginOpenBtn" onclick="openAuth()" data-i18n="loginBtn">Login</button>
+      <button class="nav-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle light/dark view">☀️</button>
       <button class="nav-btn" onclick="toggleLang()" id="langBtn">繁中</button>
       <button class="nav-btn accent" onclick="goAgent()" data-i18n="agentBtn">RIZEN Workspace →</button>
     </div>
@@ -1055,6 +1135,23 @@
   }
   function toggleLang() { applyLang(lang === 'en' ? 'zh-TW' : 'en'); }
 
+  function applySavedTheme() {
+    const saved = localStorage.getItem('szs_theme');
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    const useLight = saved ? saved === 'light' : prefersLight;
+    document.body.classList.toggle('light-mode', useLight);
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = useLight ? '🌙' : '☀️';
+  }
+
+  function toggleTheme() {
+    const useLight = !document.body.classList.contains('light-mode');
+    document.body.classList.toggle('light-mode', useLight);
+    localStorage.setItem('szs_theme', useLight ? 'light' : 'dark');
+    const btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = useLight ? '🌙' : '☀️';
+  }
+
   function updateKB() {
     const el = document.getElementById('kbText');
     if (el) el.innerHTML = T[lang].kbPrefix + ' <strong>' + (KB[lang][currentKB] || currentKB.toUpperCase()) + '</strong>';
@@ -1435,6 +1532,7 @@
   // ══════════════════════════════════════════════════════
   // INIT
   // ══════════════════════════════════════════════════════
+  applySavedTheme();
   applyLang('en');
   updateKB();
   // Auth wall shown by default until session is confirmed via onAuthStateChange
