@@ -1016,9 +1016,19 @@
     RATE.count++; return true;
   }
 
-  // ── Input sanitization ──
-  function sanitize(str) {
-    return String(str).slice(0, 2000).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // ── Input/output sanitization ──
+  function sanitize(str, max = 2000) {
+    return String(str || '')
+      .slice(0, max)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function safeFmt(text) {
+    return fmt(sanitize(text, 8000));
   }
 
   // ── State ──
@@ -1116,7 +1126,7 @@
     const ws = document.getElementById('welcomeSys');
     if (ws) ws.textContent = T[l].welcomeSys;
     const wa = document.getElementById('welcomeAi');
-    if (wa) wa.innerHTML = fmt(T[l].welcomeAi);
+    if (wa) wa.innerHTML = safeFmt(T[l].welcomeAi);
     document.getElementById('langBtn').textContent = l === 'en' ? '繁中' : 'EN';
     updateKB();
     updateUserUI();
@@ -1179,7 +1189,7 @@
     const c = document.getElementById('chatMsgs');
     const d = document.createElement('div');
     d.className = 'msg ' + role;
-    if (role === 'ai') d.innerHTML = fmt(text); else d.textContent = text;
+    if (role === 'ai') d.innerHTML = safeFmt(text); else d.textContent = text;
     c.appendChild(d); c.scrollTop = c.scrollHeight;
     return d;
   }
@@ -1193,7 +1203,7 @@
     history = [];
     const c = document.getElementById('chatMsgs'); c.innerHTML = '';
     const s = document.createElement('div'); s.className='msg sys'; s.textContent = T[lang].welcomeSys;
-    const a = document.createElement('div'); a.className='msg ai'; a.innerHTML = fmt(T[lang].welcomeAi);
+    const a = document.createElement('div'); a.className='msg ai'; a.innerHTML = safeFmt(T[lang].welcomeAi);
     c.appendChild(s); c.appendChild(a);
     sysMsg('New session started.');
   }
@@ -1242,17 +1252,17 @@
       while(true) {
         const { done, value } = await reader.read(); if(done) break;
         full += dec.decode(value, { stream:true });
-        bubble.innerHTML = fmt(full); c.scrollTop = c.scrollHeight;
+        bubble.innerHTML = safeFmt(full); c.scrollTop = c.scrollHeight;
       }
 
       if (full.startsWith('__OPEN_URL__')) {
         const m = full.match(/__OPEN_URL__(.+?)__TITLE__(.+)/);
-        if (m) { bubble.innerHTML = fmt(`Opening **${m[2]}**...`); window.open(m[1],'_blank'); }
+        if (m) { bubble.innerHTML = safeFmt(`Opening **${m[2]}**...`); window.open(m[1], '_blank', 'noopener,noreferrer'); }
       } else {
         history.push({ role:'model', parts:[{ text: full }] });
       }
       bubble.classList.remove('streaming');
-      bubble.innerHTML = fmt(full);
+      bubble.innerHTML = safeFmt(full);
 
       if (srcs.length) {
         const sd = document.createElement('div');
@@ -1435,7 +1445,7 @@
     const f=e.target.files[0]; if(!f) return;
     const item=document.createElement('div');
     item.className='src-item active';
-    item.innerHTML=`<div class="src-icon pdf">📄</div><div class="src-info"><div class="src-name">${f.name}</div><div class="src-meta">${(f.size/1024).toFixed(0)} KB</div></div><div class="src-check">✓</div>`;
+    item.innerHTML=`<div class="src-icon pdf">📄</div><div class="src-info"><div class="src-name">${sanitize(f.name, 120)}</div><div class="src-meta">${(f.size/1024).toFixed(0)} KB</div></div><div class="src-check">✓</div>`;
     item.onclick=()=>toggleSrc(item);
     document.getElementById('uploadedSrcs').appendChild(item);
     countSrcs(); e.target.value='';
@@ -1445,7 +1455,7 @@
     const domain=new URL(url).hostname.replace('www.','');
     const item=document.createElement('div');
     item.className='src-item active';
-    item.innerHTML=`<div class="src-icon web">🌐</div><div class="src-info"><div class="src-name">${domain}</div><div class="src-meta">${url.slice(0,28)}…</div></div><div class="src-check">✓</div>`;
+    item.innerHTML=`<div class="src-icon web">🌐</div><div class="src-info"><div class="src-name">${sanitize(domain, 80)}</div><div class="src-meta">${sanitize(url.slice(0,28), 80)}…</div></div><div class="src-check">✓</div>`;
     item.onclick=()=>toggleSrc(item);
     document.getElementById('webSrcs').appendChild(item);
     countSrcs();
@@ -1454,12 +1464,12 @@
     const txt=prompt('Type or paste your note:'); if(!txt) return;
     const item=document.createElement('div');
     item.className='src-item active';
-    item.innerHTML=`<div class="src-icon note">📝</div><div class="src-info"><div class="src-name">Note</div><div class="src-meta">${txt.slice(0,36)}…</div></div><div class="src-check">✓</div>`;
+    item.innerHTML=`<div class="src-icon note">📝</div><div class="src-info"><div class="src-name">Note</div><div class="src-meta">${sanitize(txt.slice(0,36), 120)}…</div></div><div class="src-check">✓</div>`;
     item.onclick=()=>toggleSrc(item);
     document.getElementById('noteSrcs').appendChild(item);
     const nl=document.getElementById('savedNotes'); nl.innerHTML='';
     const ne=document.createElement('div'); ne.className='saved-note';
-    ne.innerHTML=`<div class="note-dot"></div>${txt.slice(0,38)}${txt.length>38?'…':''}`;
+    ne.innerHTML=`<div class="note-dot"></div>${sanitize(txt.slice(0,38), 120)}${txt.length>38?'…':''}`;
     nl.appendChild(ne); countSrcs();
   }
   function addSrcPrompt() {
@@ -1490,7 +1500,7 @@
   function addAgentMsg(role,text) {
     const c=document.getElementById('agentMsgs');
     const w=document.createElement('div'); w.className='agent-msg '+role;
-    const b=document.createElement('div'); b.className='agent-bubble'; b.innerHTML=fmt(text);
+    const b=document.createElement('div'); b.className='agent-bubble'; b.innerHTML=safeFmt(text);
     const ts=document.createElement('div'); ts.className='agent-ts';
     ts.textContent=role==='user'?'You':'RIZEN · '+new Date().toLocaleTimeString();
     w.appendChild(b); w.appendChild(ts); c.appendChild(w); c.scrollTop=c.scrollHeight;
@@ -1526,15 +1536,15 @@
       document.getElementById('outputScan').classList.remove('on');
       document.getElementById('outputBody').innerHTML=`
         <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:14px">
-          ${tool.name.toUpperCase()} · BACKEND PENDING
+          ${sanitize(tool.name.toUpperCase(), 80)} · BACKEND PENDING
         </div>
         <div style="color:var(--text2);line-height:1.7">
           Once connected, this tool will run:<br><br>
-          <strong style="color:var(--text)">${tool.prompt}</strong><br><br>
+          <strong style="color:var(--text)">${sanitize(tool.prompt, 300)}</strong><br><br>
           Active sources will be passed automatically.
         </div>
         <div style="margin-top:18px;padding:12px;border:1px dashed rgba(0,229,255,0.15);border-radius:7px;font-size:11px;color:var(--muted);font-family:var(--mono)">
-          → Create Edge Function <code style="color:var(--accent)">agent-${id}</code> in your Supabase project.
+          → Create Edge Function <code style="color:var(--accent)">agent-${sanitize(id, 40)}</code> in your Supabase project.
         </div>`;
     },1000);
   }
