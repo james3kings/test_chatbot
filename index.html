@@ -1321,31 +1321,64 @@
     const cid=document.getElementById('loginId').value.trim();
     const pw =document.getElementById('loginPw').value;
     if(!cid||!pw){setAuthMsg(t.fieldReq,true);return;}
-    setBtnLoad('loginBtn',true,'loginBtn'); clearAuthMsg();
-    const {error}=await _sb.auth.signInWithPassword({email:`${cid.toLowerCase()}@szs.internal`,password:pw});
+
+    setBtnLoad('loginBtn',true,'loginBtn');
+    clearAuthMsg();
+
+    const { data, error } = await _sb.auth.signInWithPassword({
+      email:`${cid.toLowerCase()}@szs.internal`,
+      password:pw
+    });
+
     setBtnLoad('loginBtn',false,'loginBtn');
-    if(error){setAuthMsg(error.message.toLowerCase().includes('invalid')?t.badCreds:error.message,true);return;}
-    sessionStorage.setItem('szs_login','1');
+
+    if(error){
+      setAuthMsg(error.message.toLowerCase().includes('invalid')?t.badCreds:error.message,true);
+      return;
+    }
+
     document.getElementById('loginForm').reset();
+    setUserFromSession(data.session);
+    closeAuth();
+    updateUserUI();
+    sysMsg(t.loginOk);
+  }
+
+  function setUserFromSession(session) {
+    if (!session?.user) {
+      user = null;
+      return;
+    }
+
+    const m = session.user.user_metadata || {};
+    user = {
+      id: session.user.id,
+      cid: m.company_id || session.user.email.replace('@szs.internal',''),
+      name: m.full_name || ''
+    };
   }
 
   async function doLogout() {
+    const t = T[lang];
     await _sb.auth.signOut();
-    sysMsg(T[lang].logoutOk);
+    user = null;
+    closeAuth();
+    updateUserUI();
+    sysMsg(t.logoutOk);
   }
 
   _sb.auth.onAuthStateChange(async(event,session)=>{
-    if(session?.user){
-      const m=session.user.user_metadata||{};
-      user={id:session.user.id, cid:m.company_id||session.user.email.replace('@szs.internal',''), name:m.full_name||''};
-      if(event==='SIGNED_IN'){
-        closeAuth(); unlockWall();
-        if(sessionStorage.getItem('szs_login')){sysMsg(T[lang].loginOk);sessionStorage.removeItem('szs_login');}
-      }
-    } else {
-      user=null; lockWall();
-    }
+    const wasLoggedIn = !!user;
+    setUserFromSession(session);
     updateUserUI();
+
+    if(event === 'SIGNED_IN') {
+      closeAuth();
+    }
+
+    if(event === 'SIGNED_OUT' && wasLoggedIn) {
+      closeAuth();
+    }
   });
 
   function updateUserUI() {
@@ -1520,10 +1553,17 @@
   // ══════════════════════════════════════════════════════
   // INIT
   // ══════════════════════════════════════════════════════
-  applySavedTheme();
-  applyLang('en');
-  updateKB();
-  // Auth wall shown by default until session is confirmed via onAuthStateChange
+  async function initApp() {
+    applySavedTheme();
+    applyLang('en');
+    updateKB();
+
+    const { data:{ session } } = await _sb.auth.getSession();
+    setUserFromSession(session);
+    updateUserUI();
+  }
+
+  initApp();
   </script>
 </body>
 </html>
