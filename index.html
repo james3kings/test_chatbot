@@ -668,7 +668,7 @@
     <div class="stream-section">
       <div class="section-header">
         <span class="section-label" data-i18n="streamsLabel">Data Streams</span>
-        <span class="section-count">05 ACTIVE</span>
+        <span class="section-count">04 ACTIVE</span>
       </div>
       <div class="stream-grid">
 
@@ -703,15 +703,6 @@
           <span class="card-index">STREAM · 04</span>
           <div class="card-name" data-i18n="card4Title">General R&D Database</div>
           <p class="card-desc" data-i18n="card4Desc">Research findings, legacy technical archives, and collaborative discovery records.</p>
-          <div class="card-footer">
-            <span class="card-cta" data-i18n="cardCta">QUERY →</span>
-          </div>
-        </a>
-
-        <a class="stream-card" href="#" onclick="selectKB('line',this);return false;">
-          <span class="card-index">STREAM · 05</span>
-          <div class="card-name" data-i18n="card5Title">LINE AI Data Feed</div>
-          <p class="card-desc" data-i18n="card5Desc">Conversations and structured outputs from the SZS LINE messaging AI, routed here as a live knowledge feeder.</p>
           <div class="card-footer">
             <span class="card-cta" data-i18n="cardCta">QUERY →</span>
           </div>
@@ -819,11 +810,11 @@
             <div class="src-check"></div>
           </div>
 
-          <div class="src-section">LINE AI Feed</div>
-          <div class="src-item" onclick="toggleSrc(this)" data-src="line">
+          <div class="src-section">Real-Time Data Feed</div>
+          <div class="src-item active" onclick="toggleSrc(this)" data-src="line">
             <div class="src-icon line">💬</div>
-            <div class="src-info"><div class="src-name">LINE AI Data Feed</div><div class="src-meta">Messaging AI · Live</div></div>
-            <div class="src-check"></div>
+            <div class="src-info"><div class="src-name">LINE Messaging Feed</div><div class="src-meta">Real-time ingestion · Auto routed</div></div>
+            <div class="src-check">✓</div>
           </div>
 
           <div class="src-section">Uploaded Files</div>
@@ -1050,7 +1041,6 @@
       card2Title:'Non-A Product Database', card2Desc:'Flexible knowledge index for Non-A Product — diverse formats and multi-domain data.',
       card3Title:'Newcomer Training', card3Desc:'Onboarding protocols, induction materials, and department standard operating procedures.',
       card4Title:'General R&D Database', card4Desc:'Research findings, legacy technical archives, and collaborative discovery records.',
-      card5Title:'LINE AI Data Feed', card5Desc:'Conversations and structured outputs from the SZS LINE messaging AI, routed here as a live knowledge feeder.',
       cardCta:'QUERY →', securityNotice:'AUTHORIZED PERSONNEL ONLY · INTERNAL USE ONLY',
       chatTitle:'SZS AI Assistant', chatSubtitle:'RIZEN · POPUP INTERFACE',
       sendBtn:'Send', chatPh:'Type your question…',
@@ -1081,7 +1071,6 @@
       card2Title:'Non-A Product 資料庫', card2Desc:'Non-A Product 的彈性知識索引 — 多樣格式與跨領域資料。',
       card3Title:'新人訓練資料庫', card3Desc:'新進人員入職流程、訓練模組與研發部門標準作業程序。',
       card4Title:'研發通用資料庫', card4Desc:'研究成果、歷史技術檔案與協作知識紀錄。',
-      card5Title:'LINE AI 資料饋送', card5Desc:'SZS LINE 訊息 AI 的對話與結構化輸出，即時回饋至此資料流。',
       cardCta:'查詢 →', securityNotice:'僅限授權人員 · 內部使用',
       chatTitle:'SZS AI 助理', chatSubtitle:'RIZEN · 彈出介面',
       sendBtn:'送出', chatPh:'請輸入您的問題…',
@@ -1107,8 +1096,8 @@
   };
 
   const KB = {
-    en:    { bu1:'BU1', bu3:'BU3', training:'NEWCOMER TRAINING', general:'GENERAL R&D', line:'LINE AI FEED' },
-    'zh-TW':{ bu1:'BU1', bu3:'BU3', training:'新人訓練', general:'研發通用', line:'LINE AI 饋送' }
+    en:    { bu1:'BU1', bu3:'BU3', training:'NEWCOMER TRAINING', general:'GENERAL R&D', line:'LINE MESSAGING FEED' },
+    'zh-TW':{ bu1:'BU1', bu3:'BU3', training:'新人訓練', general:'研發通用', line:'LINE 訊息饋送' }
   };
 
   // ══════════════════════════════════════════════════════
