@@ -64,29 +64,6 @@
       pointer-events: none;
     }
 
-    /* ── AUTH WALL ── */
-    #authWall {
-      position: fixed; inset:0; z-index:9999;
-      background: rgba(10,12,16,0.97);
-      backdrop-filter: blur(20px);
-      display: flex; flex-direction:column; align-items:center; justify-content:center;
-      gap: 24px;
-      transition: opacity 0.4s ease;
-    }
-    #authWall.hidden { opacity:0; pointer-events:none; }
-    .wall-logo { display:flex; align-items:center; gap:14px; }
-    .wall-logo img { height:48px; filter: drop-shadow(0 0 12px rgba(0,229,255,0.4)); }
-    .wall-brand { font-family: var(--mono); font-size:11px; color: var(--accent); letter-spacing:0.3em; text-transform:uppercase; }
-    .wall-title { font-family: var(--mono); font-size:22px; color:#fff; text-align:center; }
-    .wall-sub { font-size:13px; color: var(--text2); text-align:center; max-width:320px; line-height:1.6; }
-    .wall-btn {
-      font-family: var(--mono); font-size:11px; letter-spacing:0.15em;
-      padding:12px 32px; border-radius:6px; cursor:pointer;
-      border:1px solid var(--accent); background: rgba(0,229,255,0.08);
-      color: var(--accent); transition: all 0.2s;
-    }
-    .wall-btn:hover { background: rgba(0,229,255,0.18); box-shadow: 0 0 20px rgba(0,229,255,0.2); }
-    .wall-lock { font-size:11px; color: var(--muted); font-family: var(--mono); letter-spacing:0.1em; }
 
     /* ── HEADER ── */
     header {
@@ -585,19 +562,7 @@
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════
-       AUTH WALL — blurs entire page until login
-  ══════════════════════════════════════ -->
-  <div id="authWall">
-    <div class="wall-logo">
-      <img src="logo.png" alt="SZS">
-    </div>
-    <div class="wall-brand">SZS R&D · INTELLIGENCE CORE</div>
-    <div class="wall-title">Restricted Access</div>
-    <div class="wall-sub">This system is authorized personnel only. Please authenticate to continue.</div>
-    <button class="wall-btn" onclick="openAuth()">AUTHENTICATE →</button>
-    <div class="wall-lock">🔒 INTERNAL USE ONLY</div>
-  </div>
+  
 
   <!-- ══════════════════════════════════════
        HEADER
