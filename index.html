@@ -1488,8 +1488,15 @@
   if (!checkRate()) { addAgentMsg('ai', 'Rate limit reached. Please wait a moment.'); return; }
 
   const input = document.getElementById('agentInput');
-  const msg = input.value.trim();
-  if (!msg) return;
+const msg = input.value.trim();
+if (!msg) return;
+
+// Block if no sources selected
+const selectedSrcs = [...document.querySelectorAll('#srcList .src-item.active')];
+if (selectedSrcs.length === 0) {
+  addAgentMsg('ai', '⚠️ No sources selected. Please select at least one source from the left panel.');
+  return;
+}
 
   input.value = ''; input.style.height = 'auto';
   addAgentMsg('user', msg);
