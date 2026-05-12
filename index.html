@@ -629,6 +629,12 @@
       .agent-shell { grid-template-columns:1fr; grid-template-rows:52px auto 1fr; }
       .agent-left, .agent-right { display:none; }
     }
+
+    .agent-bubble.streaming::after {
+    content: '▋'; display: inline-block; color: #00e5ff;
+    animation: blink 0.7s step-end infinite;
+   }
+    
   </style>
 </head>
 <body>
@@ -1473,19 +1479,68 @@
   // ══════════════════════════════════════════════════════
   function agentKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();agentSend();} }
   function agentResize(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,96)+'px'; }
-  function agentSend() {
-    const input=document.getElementById('agentInput');
-    const msg=input.value.trim(); if(!msg) return;
-    addAgentMsg('user',msg);
-    input.value=''; input.style.height='auto';
-    document.getElementById('agentScan').classList.add('on');
-    document.getElementById('agentSendBtn').disabled=true;
-    setTimeout(()=>{
-      addAgentMsg('ai','[ Backend pending. Received: "'+msg+'". Connect the Edge Function to enable full responses. ]');
-      document.getElementById('agentScan').classList.remove('on');
-      document.getElementById('agentSendBtn').disabled=false;
-    },900);
+  async function agentSend() {
+  if (!user) { addAgentMsg('ai', 'Please log in to use the workspace.'); openAuth(); return; }
+  if (!checkRate()) { addAgentMsg('ai', 'Rate limit reached. Please wait a moment.'); return; }
+
+  const input = document.getElementById('agentInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = ''; input.style.height = 'auto';
+  addAgentMsg('user', msg);
+
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { openAuth(); return; }
+
+  // Get all active KB sources
+  const activeSrcs = [...document.querySelectorAll('#srcList .src-item.active')]
+    .map(el => el.dataset.src).filter(Boolean);
+  const kb = activeSrcs.find(s => ['bu1','bu3','training','general'].includes(s)) || currentKB;
+
+  document.getElementById('agentScan').classList.add('on');
+  document.getElementById('agentSendBtn').disabled = true;
+
+  // Create streaming bubble
+  const c = document.getElementById('agentMsgs');
+  const w = document.createElement('div'); w.className = 'agent-msg ai';
+  const b = document.createElement('div'); b.className = 'agent-bubble streaming';
+  const ts = document.createElement('div'); ts.className = 'agent-ts'; ts.textContent = 'RIZEN · thinking…';
+  w.appendChild(b); w.appendChild(ts); c.appendChild(w); c.scrollTop = c.scrollHeight;
+
+  try {
+    const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ message: msg, knowledgeBaseId: kb })
+    });
+
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Request failed'); }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      full += dec.decode(value, { stream: true });
+      if (!full.startsWith('__OPEN_URL__')) {
+        b.innerHTML = safeFmt(full); c.scrollTop = c.scrollHeight;
+      }
+    }
+
+    b.classList.remove('streaming');
+    b.innerHTML = safeFmt(full);
+    ts.textContent = 'RIZEN · ' + new Date().toLocaleTimeString();
+
+  } catch (err) {
+    b.innerHTML = safeFmt('Error: ' + err.message);
+    ts.textContent = 'RIZEN · error';
+  } finally {
+    document.getElementById('agentScan').classList.remove('on');
+    document.getElementById('agentSendBtn').disabled = false;
   }
+}
   function addAgentMsg(role,text) {
     const c=document.getElementById('agentMsgs');
     const w=document.createElement('div'); w.className='agent-msg '+role;
@@ -1514,29 +1569,78 @@
     slide:       { icon:'🖼️', name:'Slide Deck Builder',     prompt:'Convert source content into a structured slide outline.' },
   };
 
-  function runTool(id) {
-    const tool=TOOLS[id]; if(!tool) return;
-    const ov=document.getElementById('outputOverlay');
-    document.getElementById('outputTitle').textContent=tool.icon+'  '+tool.name;
-    document.getElementById('outputBody').innerHTML='<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Initializing…</span>';
-    document.getElementById('outputScan').classList.add('on');
-    ov.classList.add('show');
-    setTimeout(()=>{
-      document.getElementById('outputScan').classList.remove('on');
-      document.getElementById('outputBody').innerHTML=`
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-bottom:14px">
-          ${sanitize(tool.name.toUpperCase(), 80)} · BACKEND PENDING
-        </div>
-        <div style="color:var(--text2);line-height:1.7">
-          Once connected, this tool will run:<br><br>
-          <strong style="color:var(--text)">${sanitize(tool.prompt, 300)}</strong><br><br>
-          Active sources will be passed automatically.
-        </div>
-        <div style="margin-top:18px;padding:12px;border:1px dashed rgba(0,229,255,0.15);border-radius:7px;font-size:11px;color:var(--muted);font-family:var(--mono)">
-          → Create Edge Function <code style="color:var(--accent)">agent-${sanitize(id, 40)}</code> in your Supabase project.
-        </div>`;
-    },1000);
+  async function runTool(id) {
+  const tool = TOOLS[id]; if (!tool) return;
+
+  if (!user) { addAgentMsg('ai', 'Please log in to use workspace tools.'); openAuth(); return; }
+  if (!checkRate()) { addAgentMsg('ai', 'Rate limit reached. Please wait.'); return; }
+
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { openAuth(); return; }
+
+  // Get active KB sources
+  const activeSrcs = [...document.querySelectorAll('#srcList .src-item.active')]
+    .map(el => el.dataset.src).filter(Boolean);
+  const kb = activeSrcs.find(s => ['bu1','bu3','training','general'].includes(s)) || currentKB;
+
+  // Open output modal and show loading state
+  const ov = document.getElementById('outputOverlay');
+  const titleEl = document.getElementById('outputTitle');
+  const bodyEl = document.getElementById('outputBody');
+  const scanEl = document.getElementById('outputScan');
+
+  titleEl.textContent = tool.icon + '  ' + tool.name;
+  bodyEl.innerHTML = '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Generating…</span>';
+  scanEl.classList.add('on');
+  ov.classList.add('show');
+
+  // Tool-specific prompts sent to ai-chat
+  const toolPrompts = {
+    summary: `Generate a concise executive summary of all available information in the ${kb.toUpperCase()} knowledge base. Structure it with: Key Findings, Main Topics, and Recommendations. Use bullet points. Be professional and concise.`,
+    report:  `Generate a structured R&D report from the ${kb.toUpperCase()} knowledge base. Include these sections: 1. Overview, 2. Key Technical Findings, 3. Data Summary, 4. Recommendations, 5. Next Steps. Be thorough and professional.`,
+    bom:     `Extract all Bill of Materials information from the ${kb.toUpperCase()} knowledge base. List every component, material, part number, quantity, and specification you can find. Format as a clear numbered list with details for each item.`,
+    dfm:     `Generate a Design for Manufacturability (DFM) document based on the ${kb.toUpperCase()} knowledge base. Include: material considerations, manufacturing constraints, tolerances, assembly notes, and potential issues. Structure clearly with sections.`,
+    meeting: `Extract and organize all action items, decisions, and key discussion points from the ${kb.toUpperCase()} knowledge base. Format as: Action Items (with owners if mentioned), Decisions Made, and Key Discussion Points.`,
+    fea:     `Analyze and categorize all FEA simulation results from the ${kb.toUpperCase()} knowledge base. Bin results into: PASS, MARGINAL, FAIL categories with criteria. List all components analyzed and their status.`,
+    torque:  `Extract all torque specifications, calculations, and related mechanical data from the ${kb.toUpperCase()} knowledge base. Present as a structured specification table with values, units, and tolerance ranges.`,
+    slide:   `Create a structured slide outline from the ${kb.toUpperCase()} knowledge base. Format each slide as: [SLIDE N: Title] followed by 3-5 bullet points. Generate 6-8 slides covering the most important information.`,
+    'line-digest': `Summarize the most recent and relevant information from the knowledge base as a daily digest. Format as: Top Stories, Key Updates, and Action Required sections.`,
+  };
+
+  const prompt = toolPrompts[id] || tool.prompt;
+
+  try {
+    const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ message: prompt, knowledgeBaseId: kb })
+    });
+
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Request failed'); }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+    bodyEl.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      full += dec.decode(value, { stream: true });
+      bodyEl.innerHTML = safeFmt(full);
+    }
+
+    scanEl.classList.remove('on');
+    bodyEl.innerHTML = safeFmt(full);
+
+    // Also add to agent chat as a message
+    addAgentMsg('ai', `✅ **${tool.name}** complete. Output shown in modal.`);
+
+  } catch (err) {
+    scanEl.classList.remove('on');
+    bodyEl.innerHTML = `<span style="color:var(--accent2)">Error: ${sanitize(err.message)}</span>`;
   }
+}
+    
   function closeOutput() {
     document.getElementById('outputOverlay').classList.remove('show');
     document.getElementById('outputScan').classList.remove('on');
