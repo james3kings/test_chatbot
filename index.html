@@ -1172,13 +1172,17 @@
 
   // ── Message rendering ──
   function fmt(text) {
-    if (!text) return '';
-    return String(text)
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/^(\d+)\.\s+(.+)$/gm, '<div style="display:flex;gap:7px;margin:2px 0"><span style="color:var(--accent);font-weight:700;min-width:14px">$1.</span><span>$2</span></div>')
-      .replace(/^[•\-\*]\s+(.+)$/gm, '<div style="display:flex;gap:7px;margin:2px 0"><span style="color:var(--accent)">•</span><span>$1</span></div>')
-      .replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
-  }
+  if (!text) return '';
+  return String(text)
+    .replace(/^### (.+)$/gm, '<div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);margin:12px 0 4px;letter-spacing:0.05em">$1</div>')
+    .replace(/^## (.+)$/gm,  '<div style="font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;margin:16px 0 6px;letter-spacing:0.05em">$1</div>')
+    .replace(/^# (.+)$/gm,   '<div style="font-family:var(--mono);font-size:15px;font-weight:700;color:#fff;margin:20px 0 8px;letter-spacing:0.05em;border-bottom:1px solid var(--rim);padding-bottom:6px">$1</div>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^(\d+)\.\s+(.+)$/gm, '<div style="display:flex;gap:7px;margin:2px 0"><span style="color:var(--accent);font-weight:700;min-width:14px">$1.</span><span>$2</span></div>')
+    .replace(/^[•\-\*]\s+(.+)$/gm, '<div style="display:flex;gap:7px;margin:2px 0"><span style="color:var(--accent)">•</span><span>$1</span></div>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--rim);margin:12px 0">')
+    .replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+}
 
   function addMsg(role, text) {
     const c = document.getElementById('chatMsgs');
