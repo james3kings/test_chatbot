@@ -1536,7 +1536,7 @@
     const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ message: msg, knowledgeBaseId: kb, activeSources: allActiveSources })
+      body: JSON.stringify({ message: msg, knowledgeBaseId: kb, activeSources: allActiveSources, mode: 'agent' })
     });
 
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Request failed'); }
@@ -1637,7 +1637,7 @@ async function runToolWithContext(id, userContext) {
     const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ message: prompt, knowledgeBaseId: kb, activeSources: activeSrcs })
+      body: JSON.stringify({ message: prompt, knowledgeBaseId: kb, activeSources: activeSrcs, mode: 'agent' })
     });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error||'Request failed'); }
 
