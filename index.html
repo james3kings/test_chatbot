@@ -1490,13 +1490,37 @@
   input.value = ''; input.style.height = 'auto';
   addAgentMsg('user', msg);
 
+  // ── Orchestrator: detect task intent and auto-route to tool ──
+  const lower = msg.toLowerCase();
+  const intentMap = [
+    { tool: 'dfm',          keys: ['dfm','design for manufacture','design for manufacturability'] },
+    { tool: 'bom',          keys: ['bom','bill of material','parts list'] },
+    { tool: 'report',       keys: ['report','r&d report','generate report'] },
+    { tool: 'summary',      keys: ['summary','summarize','executive brief','brief'] },
+    { tool: 'line-digest',  keys: ['line digest','line feed','line summary','messaging digest'] },
+    { tool: 'meeting',      keys: ['meeting','action item','minutes'] },
+    { tool: 'fea',          keys: ['fea','finite element','binning','simulation result'] },
+    { tool: 'torque',       keys: ['torque','torque spec','hinge torque'] },
+    { tool: 'slide',        keys: ['slide','presentation','deck','pptx'] },
+  ];
+  const matched = intentMap.find(({ keys }) => keys.some(k => lower.includes(k)));
+  if (matched) {
+    // Show intent detection notice in chat, then open tool modal with user's message as extra context
+    addAgentMsg('ai', `🔍 Task detected: **${TOOLS[matched.tool].name}**. Running against your active sources…`);
+    runToolWithContext(matched.tool, msg);
+    return; // skip plain chat, tool handles the response
+  }
+  // No tool intent → fall through to normal agent chat below
+
   const { data: { session } } = await _sb.auth.getSession();
   if (!session) { openAuth(); return; }
 
   // Get all active KB sources
   const activeSrcs = [...document.querySelectorAll('#srcList .src-item.active')]
     .map(el => el.dataset.src).filter(Boolean);
-  const kb = activeSrcs.find(s => ['bu1','bu3','training','general'].includes(s)) || currentKB;
+  const kbSources = activeSrcs.filter(s => ['bu1','bu3','training','general'].includes(s));
+  const kb = kbSources.length > 0 ? kbSources[0] : currentKB;
+  const allActiveSources = activeSrcs; // pass full list to edge function
 
   document.getElementById('agentScan').classList.add('on');
   document.getElementById('agentSendBtn').disabled = true;
@@ -1512,7 +1536,7 @@
     const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-      body: JSON.stringify({ message: msg, knowledgeBaseId: kb })
+      body: JSON.stringify({ message: msg, knowledgeBaseId: kb, activeSources: allActiveSources })
     });
 
     if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.error || 'Request failed'); }
@@ -1569,6 +1593,74 @@
     slide:       { icon:'🖼️', name:'Slide Deck Builder',     prompt:'Convert source content into a structured slide outline.' },
   };
 
+    // Called by orchestrator — merges user's natural language with the tool prompt
+async function runToolWithContext(id, userContext) {
+  const tool = TOOLS[id]; if (!tool) return;
+  if (!checkRate()) return;
+
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { openAuth(); return; }
+
+  const activeSrcs = [...document.querySelectorAll('#srcList .src-item.active')]
+    .map(el => el.dataset.src).filter(Boolean);
+  const kb = activeSrcs.find(s => ['bu1','bu3','training','general'].includes(s)) || currentKB;
+
+  const ov = document.getElementById('outputOverlay');
+  const titleEl = document.getElementById('outputTitle');
+  const bodyEl = document.getElementById('outputBody');
+  const scanEl = document.getElementById('outputScan');
+
+  titleEl.textContent = tool.icon + '  ' + tool.name;
+  bodyEl.innerHTML = '<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">Generating…</span>';
+  scanEl.classList.add('on');
+  ov.classList.add('show');
+
+  // Merge user instruction with tool base prompt
+  const basePrompts = {
+    summary: `Generate a concise executive summary of all available information in the ${kb.toUpperCase()} knowledge base. Structure it with: Key Findings, Main Topics, and Recommendations.`,
+    report:  `Generate a structured R&D report from the ${kb.toUpperCase()} knowledge base. Include: Overview, Key Technical Findings, Data Summary, Recommendations, Next Steps.`,
+    bom:     `Extract all Bill of Materials information from the ${kb.toUpperCase()} knowledge base. List every component, material, part number, quantity, and specification.`,
+    dfm:     `Generate a Design for Manufacturability (DFM) document based on the ${kb.toUpperCase()} knowledge base. Include: material considerations, manufacturing constraints, tolerances, assembly notes, potential issues.`,
+    meeting: `Extract and organize all action items, decisions, and key discussion points from the ${kb.toUpperCase()} knowledge base.`,
+    fea:     `Analyze and categorize all FEA simulation results from the ${kb.toUpperCase()} knowledge base into PASS, MARGINAL, FAIL categories.`,
+    torque:  `Extract all torque specifications and mechanical data from the ${kb.toUpperCase()} knowledge base as a structured specification table.`,
+    slide:   `Create a structured slide outline (6-8 slides) from the ${kb.toUpperCase()} knowledge base. Format each as: [SLIDE N: Title] + bullet points.`,
+    'line-digest': `Summarize the most recent information as a daily digest with: Top Stories, Key Updates, Action Required.`,
+  };
+
+  // Append user's specific instruction to the base prompt
+  const prompt = (basePrompts[id] || tool.prompt) +
+    `\n\nAdditional instruction from user: "${userContext}"` +
+    `\n\nActive sources: ${activeSrcs.join(', ') || kb}. Cross-reference all active sources where relevant.`;
+
+  try {
+    const res = await fetch(`${SB_URL}/functions/v1/ai-chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ message: prompt, knowledgeBaseId: kb, activeSources: activeSrcs })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error||'Request failed'); }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let full = '';
+    bodyEl.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      full += dec.decode(value, { stream: true });
+      bodyEl.innerHTML = safeFmt(full);
+    }
+    scanEl.classList.remove('on');
+    bodyEl.innerHTML = safeFmt(full);
+    addAgentMsg('ai', `✅ **${tool.name}** complete. Output shown in panel →`);
+
+  } catch (err) {
+    scanEl.classList.remove('on');
+    bodyEl.innerHTML = `<span style="color:var(--accent2)">Error: ${sanitize(err.message)}</span>`;
+  }
+}
+    
   async function runTool(id) {
   const tool = TOOLS[id]; if (!tool) return;
 
