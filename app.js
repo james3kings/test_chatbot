@@ -410,12 +410,16 @@
   // PAGE NAV
   // ══════════════════════════════════════════════════════
   function goAgent() {
-    document.getElementById('mainPage').style.display='none';
-    document.getElementById('agentPage').style.display='block';
-    document.getElementById('chatToggleBtn').style.display='none';
-    dismissTeaser();
-    countSrcs();
+  if (!user) {
+    openAuth();
+    return;
   }
+  document.getElementById('mainPage').style.display='none';
+  document.getElementById('agentPage').style.display='block';
+  document.getElementById('chatToggleBtn').style.display='none';
+  dismissTeaser();
+  countSrcs();
+}
   function goMain() {
     document.getElementById('mainPage').style.display='';
     document.getElementById('agentPage').style.display='none';
